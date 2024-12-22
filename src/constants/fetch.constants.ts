@@ -1,0 +1,10 @@
+export const FETCH_CONSTANTS = {
+  TIMEOUT: 30000,
+  RETRY_COUNT: 3,
+  RETRY_DELAY: 1000,
+  STATUS: {
+    TIMEOUT: 408,
+    UNAUTHORIZED: 401,
+    SERVER_ERROR: 500,
+  },
+} as const;
