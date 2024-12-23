@@ -75,6 +75,7 @@ export function LoginForm({
 
       if (response.data?.token) {
         clientAuth.setToken(response.data.token);
+        router.push("/dashboard");
       } else {
         setError("Invalid response from server");
       }
