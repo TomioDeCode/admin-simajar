@@ -20,11 +20,13 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/fragments/TablePagination";
 import { TableSearch } from "@/components/fragments/TableSearch";
-import { columns } from "@/components/ellements/Columns";
-import { DataType } from "@/types/table";
-import { Button } from "../ui/button";
+import { createColumns } from "@/components/ellements/ColumnsTable";
+import { DataType } from "@/types/form";
+import { FormField } from "@/types/form";
+import { ArrowUpDown } from "lucide-react";
+import { DialogForm } from "../common/DialogForm";
 
-const data: DataType[] = [
+const initialData: DataType[] = [
   {
     id: 1,
     name: "John Doe",
@@ -44,7 +46,54 @@ const data: DataType[] = [
 export function DataTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filtering, setFiltering] = useState("");
+  const [data, setData] = useState<DataType[]>(initialData);
 
+  const fields: FormField[] = [
+    {
+      id: "name",
+      label: "Name",
+      type: "text",
+      placeholder: "Enter name",
+      required: true,
+    },
+    {
+      id: "email",
+      label: "Email",
+      type: "email",
+      placeholder: "Enter email",
+    },
+    {
+      id: "role",
+      label: "Role",
+      type: "select",
+      options: [
+        { value: "Admin", label: "Admin" },
+        { value: "User", label: "User" },
+      ],
+    },
+    {
+      id: "status",
+      label: "Status",
+      type: "select",
+      options: [
+        { value: "Active", label: "Active" },
+        { value: "Inactive", label: "Inactive" },
+      ],
+    },
+  ];
+
+  const handleSubmit = (formData: Record<string, any>) => {
+    const newItem: DataType = {
+      id: data.length + 1,
+      name: formData.name as string,
+      email: formData.email as string,
+      role: formData.role as string,
+      status: formData.status as string,
+    };
+    setData([...data, newItem]);
+  };
+
+  const columns = createColumns(data, setData);
   const table = useReactTable({
     data,
     columns,
@@ -61,27 +110,52 @@ export function DataTable() {
   });
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between">
-        <TableSearch value={filtering} onChange={setFiltering} />
-        <Button>CREATE</Button>
+    <div className="w-full space-y-6">
+      <div className="flex items-center justify-between px-4">
+        <TableSearch
+          value={filtering}
+          onChange={setFiltering}
+          className="w-64"
+        />
+        <DialogForm
+          title="Create User"
+          description="Add a new user to the system"
+          fields={fields}
+          onSubmit={handleSubmit}
+        />
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className="bg-gray-50/80 hover:bg-gray-50"
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
                     onClick={header.column.getToggleSortingHandler()}
-                    className="cursor-pointer"
+                    className={`
+                      px-6 py-4 text-left text-sm font-semibold text-gray-900
+                      transition-colors duration-200
+                      ${
+                        header.column.getCanSort()
+                          ? "cursor-pointer hover:bg-gray-100"
+                          : ""
+                      }
+                    `}
                   >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    <div className="flex items-center gap-2">
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                      {header.column.getCanSort() && (
+                        <ArrowUpDown className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </div>
                   </TableHead>
                 ))}
               </TableRow>
@@ -90,9 +164,15 @@ export function DataTable() {
           <TableBody>
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  className="border-b border-gray-100 transition-colors hover:bg-gray-50/60 data-[state=selected]:bg-gray-50"
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className="px-6 py-4 text-sm text-gray-600"
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -105,9 +185,9 @@ export function DataTable() {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-32 text-center text-sm text-gray-500"
                 >
-                  No results.
+                  No results found.
                 </TableCell>
               </TableRow>
             )}
@@ -115,7 +195,9 @@ export function DataTable() {
         </Table>
       </div>
 
-      <TablePagination table={table} />
+      <div className="px-4">
+        <TablePagination table={table} />
+      </div>
     </div>
   );
 }

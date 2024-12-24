@@ -17,12 +17,12 @@ interface ProjectItem {
   icon: LucideIcon | IconType;
 }
 
-interface NavProjectsProps {
+interface NavMainProps {
   projects: ProjectItem[];
   text: string;
 }
 
-export function NavProjects({ projects, text }: NavProjectsProps) {
+export function NavMain({ projects, text }: NavMainProps) {
   return (
     <SidebarGroup className="-mt-2.5">
       <SidebarGroupLabel className="flex items-center gap-2">

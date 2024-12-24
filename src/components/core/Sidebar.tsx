@@ -1,23 +1,12 @@
 "use client";
 
 import * as React from "react";
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react";
+import { GalleryVerticalEnd } from "lucide-react";
 import { PiDoor, PiGraduationCap, PiStudent } from "react-icons/pi";
 
-import { NavProjects } from "@/components/fragments/NavProjects";
+import { NavMain } from "@/components/fragments/NavMain";
 import { NavUser } from "@/components/fragments/NavUser";
-import { TeamSwitcher } from "@/components/fragments/TeamSwitcher";
+import { NavLogo } from "@/components/fragments/NavLogo";
 import {
   Sidebar,
   SidebarContent,
@@ -66,12 +55,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <NavLogo teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.guru} text="Guru" />
-        <NavProjects projects={data.murid} text="Siswa" />
-        <NavProjects projects={data.ruangan} text="Ruangan" />
+        <NavMain projects={data.guru} text="Guru" />
+        <NavMain projects={data.murid} text="Siswa" />
+        <NavMain projects={data.ruangan} text="Ruangan" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

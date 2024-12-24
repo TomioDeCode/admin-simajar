@@ -18,7 +18,7 @@ interface BreadcrumbItem {
   path: string;
 }
 
-const BreadcrumbItems = () => {
+const BreadcrumbHeader = () => {
   const pathname = usePathname();
 
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
@@ -75,4 +75,4 @@ const BreadcrumbItems = () => {
   );
 };
 
-export default BreadcrumbItems;
+export default BreadcrumbHeader;

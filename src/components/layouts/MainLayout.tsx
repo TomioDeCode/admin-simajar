@@ -1,7 +1,7 @@
 import React from "react";
 import { SidebarInset, SidebarProvider } from "../ui/sidebar";
-import { AppSidebar } from "../core/AppSidebar";
-import BreadcrumbItems from "../common/BreadcrumbItems";
+import { AppSidebar } from "../core/Sidebar";
+import BreadcrumbItems from "../common/BreadcrumbHeader";
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
