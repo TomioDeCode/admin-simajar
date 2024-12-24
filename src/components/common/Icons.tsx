@@ -1,10 +1,23 @@
 import React from "react";
 
-type IconsType = {
+interface IconProps {
   icon: React.ElementType;
-  size: number;
-};
+  size?: number;
+  className?: string;
+  color?: string;
+}
 
-export const Icons = ({ icon: Icon, size }: IconsType) => {
-  return <Icon size={size} />;
+export const Icons = ({
+  icon: Icon,
+  size = 24,
+  className,
+  color
+}: IconProps) => {
+  return (
+    <Icon
+      size={size}
+      className={className}
+      color={color}
+    />
+  );
 };

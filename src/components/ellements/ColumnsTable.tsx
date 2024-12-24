@@ -3,6 +3,8 @@ import { DataType } from "@/types/table";
 import { DeleteDialog } from "../common/DeleteDialog";
 import { FormField } from "@/types/form";
 import { DialogForm } from "../common/DialogForm";
+import { ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const createColumns = (
   data: DataType[],
@@ -11,46 +13,88 @@ export const createColumns = (
   return [
     {
       accessorKey: "name",
-      header: "Name",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0 hover:bg-transparent"
+        >
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
     },
     {
       accessorKey: "email",
-      header: "Email",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0 hover:bg-transparent"
+        >
+          Email
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
     },
     {
       accessorKey: "role",
-      header: "Role",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0 hover:bg-transparent"
+        >
+          Role
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="p-0 hover:bg-transparent"
+        >
+          Status
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className={`font-medium ${
+          row.getValue("status") === "Active" ? "text-green-600" : "text-red-600"
+        }`}>
+          {row.getValue("status")}
+        </div>
+      ),
     },
     {
       id: "actions",
-      accessorKey: "actions",
       header: "Actions",
       cell: ({ row }) => {
         const rowData = row.original;
         return (
-          <div className="flex gap-2 -ml-1.5">
+          <div className="flex gap-2">
             <DialogForm
               title="Update User"
               description="Edit user information"
-              fields={fields}
+              fields={USER_FIELDS}
               initialData={rowData}
               isUpdate
               onSubmit={(newData) => {
-                setData(
-                  data.map((item) =>
+                setData((prev) =>
+                  prev.map((item) =>
                     item.id === rowData.id ? { ...item, ...newData } : item
                   )
                 );
               }}
             />
             <DeleteDialog
-              text="Siswa"
+              text="User"
               onConfirm={() => {
-                setData(data.filter((item) => item.id !== rowData.id));
+                setData((prev) => prev.filter((item) => item.id !== rowData.id));
               }}
             />
           </div>
@@ -60,7 +104,7 @@ export const createColumns = (
   ];
 };
 
-const fields: FormField[] = [
+const USER_FIELDS: FormField[] = [
   {
     id: "name",
     label: "Name",
@@ -71,8 +115,9 @@ const fields: FormField[] = [
   {
     id: "email",
     label: "Email",
-    type: "email",
+    type: "email", 
     placeholder: "Enter email",
+    required: true,
   },
   {
     id: "role",
@@ -82,14 +127,16 @@ const fields: FormField[] = [
       { value: "Admin", label: "Admin" },
       { value: "User", label: "User" },
     ],
+    required: true,
   },
   {
     id: "status",
     label: "Status",
-    type: "select",
+    type: "select", 
     options: [
       { value: "Active", label: "Active" },
       { value: "Inactive", label: "Inactive" },
     ],
+    required: true,
   },
 ];

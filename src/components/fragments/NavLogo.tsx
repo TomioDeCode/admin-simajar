@@ -19,17 +19,29 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export function NavLogo({
-  teams,
-}: {
-  teams: {
-    name: string;
-    logo: React.ElementType;
-    plan: string;
-  }[];
-}) {
+interface Team {
+  name: string;
+  logo: React.ElementType;
+  plan: string;
+}
+
+interface NavLogoProps {
+  teams: Team[];
+}
+
+export function NavLogo({ teams }: NavLogoProps) {
   const { isMobile } = useSidebar();
-  const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+  const [activeTeam, setActiveTeam] = React.useState<Team>(teams[0]);
+
+  const handleTeamChange = React.useCallback((team: Team) => {
+    setActiveTeam(team);
+  }, []);
+
+  const renderTeamLogo = React.useCallback((team: Team, size: number = 4) => (
+    <div className="flex items-center justify-center">
+      <team.logo className={`size-${size}`} />
+    </div>
+  ), []);
 
   return (
     <SidebarMenu>
@@ -41,7 +53,7 @@ export function NavLogo({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <activeTeam.logo className="size-4" />
+                {renderTeamLogo(activeTeam)}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
@@ -64,11 +76,11 @@ export function NavLogo({
             {teams.map((team, index) => (
               <DropdownMenuItem
                 key={team.name}
-                onClick={() => setActiveTeam(team)}
+                onClick={() => handleTeamChange(team)}
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <team.logo className="size-4 shrink-0" />
+                  {renderTeamLogo(team)}
                 </div>
                 {team.name}
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>

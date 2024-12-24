@@ -14,44 +14,62 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { ProjectItem } from "@/types/sidebar";
+
+interface User {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+interface Team {
+  name: string;
+  logo: React.ComponentType;
+  plan: string;
+}
 
 const data = {
   user: {
     name: "shadcn",
-    email: "m@example.com",
+    email: "m@example.com", 
     avatar: "/avatars/shadcn.jpg",
-  },
+  } as User,
   teams: [
     {
       name: "Acme Inc",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },
-  ],
+  ] as Team[],
   guru: [
     {
+      id: "guru-1",
       name: "Guru",
       url: "/guru",
       icon: PiGraduationCap,
     },
-  ],
+  ] as ProjectItem[],
   murid: [
     {
+      id: "murid-1", 
       name: "Siswa",
       url: "/siswa",
       icon: PiStudent,
     },
-  ],
+  ] as ProjectItem[],
   ruangan: [
     {
-      name: "Ruangan",
+      id: "ruangan-1",
+      name: "Ruangan", 
       url: "/ruangan",
       icon: PiDoor,
     },
-  ],
+  ] as ProjectItem[],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export const AppSidebar = React.memo(function AppSidebar({ 
+  ...props 
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -68,4 +86,4 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarRail />
     </Sidebar>
   );
-}
+});

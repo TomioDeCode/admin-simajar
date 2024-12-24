@@ -9,15 +9,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Pencil, Plus } from "lucide-react";
-import { useState } from "react";
-import { FormField } from "@/components/ellements/FormField";
+import { useState, useCallback } from "react";
+import { FormFields } from "@/components/ellements/FormField";
 import { FormField as FormFieldType } from "@/types/form";
 
 interface DialogFormProps {
   title: string;
   description: string;
   fields: FormFieldType[];
-  onSubmit: (data: Record<string, any>) => void;
+  onSubmit: (data: Record<string, any>) => Promise<void> | void;
+  initialData?: Record<string, any>;
+  isUpdate?: boolean;
 }
 
 export function DialogForm({
@@ -27,12 +29,10 @@ export function DialogForm({
   onSubmit,
   initialData = {},
   isUpdate = false,
-}: DialogFormProps & {
-  initialData?: Record<string, any>;
-  isUpdate?: boolean;
-}) {
+}: DialogFormProps) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Record<string, any>>(
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any>>(() =>
     fields.reduce(
       (acc, field) => ({
         ...acc,
@@ -43,11 +43,35 @@ export function DialogForm({
     )
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-    setOpen(false);
-  };
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        setIsSubmitting(true);
+        await onSubmit(formData);
+        setOpen(false);
+        setFormData(
+          fields.reduce(
+            (acc, field) => ({
+              ...acc,
+              [field.id]:
+                initialData[field.id] ?? (field.type === "checkbox" ? false : ""),
+            }),
+            {}
+          )
+        );
+      } catch (error) {
+        console.error("Form submission error:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [fields, formData, initialData, onSubmit]
+  );
+
+  const handleFieldChange = useCallback((id: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -57,8 +81,8 @@ export function DialogForm({
           className="flex items-center gap-2 px-4 py-2 transition-colors duration-200"
         >
           {isUpdate ? (
-            <div className="w-1 h-1 flex items-center justify-center">
-              <Pencil />
+            <div className="w-6 h-6 flex items-center justify-center">
+              <Pencil className="w-4 h-4" />
             </div>
           ) : (
             <>
@@ -80,13 +104,11 @@ export function DialogForm({
           </DialogHeader>
           <div className="space-y-5">
             {fields.map((field) => (
-              <FormField
+              <FormFields
                 key={field.id}
                 field={field}
                 value={formData[field.id]}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, [field.id]: value }))
-                }
+                onChange={(value) => handleFieldChange(field.id, value)}
               />
             ))}
           </div>
@@ -96,11 +118,16 @@ export function DialogForm({
               variant="outline"
               onClick={() => setOpen(false)}
               className="flex-1 px-4 py-2"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1 px-4 py-2">
-              {isUpdate ? "Update" : "Save"}
+            <Button
+              type="submit"
+              className="flex-1 px-4 py-2"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Loading..." : isUpdate ? "Update" : "Save"}
             </Button>
           </DialogFooter>
         </form>

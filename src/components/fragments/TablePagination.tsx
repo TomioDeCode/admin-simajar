@@ -7,12 +7,18 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { DataType } from "@/types/table";
+import { memo } from "react";
 
 interface TablePaginationProps {
   table: Table<DataType>;
 }
 
-export function TablePagination({ table }: TablePaginationProps) {
+export const TablePagination = memo(function TablePagination({ table }: TablePaginationProps) {
+  const { pageIndex } = table.getState().pagination;
+  const pageCount = table.getPageCount();
+  const canPreviousPage = table.getCanPreviousPage();
+  const canNextPage = table.getCanNextPage();
+
   return (
     <div className="flex items-center justify-between space-x-2 py-4">
       <div className="flex items-center space-x-2">
@@ -20,41 +26,44 @@ export function TablePagination({ table }: TablePaginationProps) {
           variant="outline"
           size="sm"
           onClick={() => table.setPageIndex(0)}
-          disabled={!table.getCanPreviousPage()}
+          disabled={!canPreviousPage}
+          aria-label="First page"
         >
-          <ChevronsLeft className="h-4 w-4" />
+          <ChevronsLeft className="size-4" />
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          disabled={!canPreviousPage}
+          aria-label="Previous page"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          disabled={!canNextPage}
+          aria-label="Next page"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-          disabled={!table.getCanNextPage()}
+          onClick={() => table.setPageIndex(pageCount - 1)}
+          disabled={!canNextPage}
+          aria-label="Last page"
         >
-          <ChevronsRight className="h-4 w-4" />
+          <ChevronsRight className="size-4" />
         </Button>
       </div>
       <div className="flex items-center space-x-2">
         <p className="text-sm font-medium">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {table.getPageCount()}
+          Page {pageIndex + 1} of {pageCount}
         </p>
       </div>
     </div>
   );
-}
+});

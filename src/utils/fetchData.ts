@@ -3,35 +3,46 @@ import { FETCH_CONSTANTS } from "@/constants/fetch.constants";
 import { FetchError } from "@/utils/errors";
 import { delay, createHeaders } from "@/utils/helpers";
 
+/**
+ * Performs a fetch request with retry capability and timeout handling
+ */
 async function fetchWithRetry(
   url: string,
   config: FetchConfig,
   attempt: number = 1
 ): Promise<Response> {
   const controller = new AbortController();
-  const timeout = config.timeout || FETCH_CONSTANTS.TIMEOUT;
+  const timeout = config.timeout ?? FETCH_CONSTANTS.TIMEOUT;
 
   try {
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        controller.abort();
+        reject(new FetchError(`Request timeout after ${timeout}ms`, FETCH_CONSTANTS.STATUS.TIMEOUT));
+      }, timeout);
+    });
 
-    const response = await fetch(url, {
+    const fetchPromise = fetch(url, {
       ...config,
       signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
 
     const shouldRetry =
       !response.ok &&
-      attempt < (config.retryCount || FETCH_CONSTANTS.RETRY_COUNT);
+      attempt < (config.retryCount ?? FETCH_CONSTANTS.RETRY_COUNT);
 
     if (shouldRetry) {
-      await delay(config.retryDelay || FETCH_CONSTANTS.RETRY_DELAY);
+      await delay(config.retryDelay ?? FETCH_CONSTANTS.RETRY_DELAY);
       return fetchWithRetry(url, config, attempt + 1);
     }
 
     return response;
   } catch (error) {
+    if (error instanceof FetchError) {
+      throw error;
+    }
     if (error instanceof Error && error.name === "AbortError") {
       throw new FetchError(
         `Request timeout after ${timeout}ms`,
@@ -42,19 +53,25 @@ async function fetchWithRetry(
   }
 }
 
+/**
+ * Parses the API response into a standardized format
+ */
 async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
-  const responseData = await response.json();
+  const responseData = await response.json().catch(() => ({}));
 
   return {
     status: response.status,
     is_success: response.ok,
-    message: responseData.message || "",
+    message: responseData.message ?? "",
     data: response.ok ? responseData.data : null,
-    error: response.ok ? null : responseData.message || "An error occurred",
+    error: response.ok ? null : responseData.message ?? "An error occurred",
     isLoading: false,
   };
 }
 
+/**
+ * Handles various error types and returns a standardized error response
+ */
 function handleError(error: unknown): ApiResponse<never> {
   if (error instanceof FetchError) {
     return {
@@ -68,7 +85,7 @@ function handleError(error: unknown): ApiResponse<never> {
   }
 
   const errorMessage =
-    error instanceof Error ? error.message : "An error occurred";
+    error instanceof Error ? error.message : "An unexpected error occurred";
 
   return {
     status: FETCH_CONSTANTS.STATUS.SERVER_ERROR,
@@ -80,6 +97,9 @@ function handleError(error: unknown): ApiResponse<never> {
   };
 }
 
+/**
+ * Main fetch function that handles authentication, retries, and error handling
+ */
 export async function fetchData<T>(
   url: string,
   config: FetchConfig = {}
