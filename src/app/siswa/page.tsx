@@ -1,6 +1,7 @@
 import React from "react";
 import { WalletCard } from "@/components/core/WalletCard";
 import { WalletIcon } from "lucide-react";
+import { DataTable } from "@/components/core/DataTable";
 
 const page = () => {
   return (
@@ -22,6 +23,7 @@ const page = () => {
           icon={<WalletIcon className="text-primary w-6 h-6" />}
         />
       </div>
+      <DataTable />
     </div>
   );
 };

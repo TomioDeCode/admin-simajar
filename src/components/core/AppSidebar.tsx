@@ -14,10 +14,9 @@ import {
   SquareTerminal,
 } from "lucide-react";
 
-import { NavMain } from "@/components/ellements/NavMain";
-import { NavProjects } from "@/components/ellements/NavProjects";
-import { NavUser } from "@/components/ellements/NavUser";
-import { TeamSwitcher } from "@/components/ellements/TeamSwitcher";
+import { NavProjects } from "@/components/fragments/NavProjects";
+import { NavUser } from "@/components/fragments/NavUser";
+import { TeamSwitcher } from "@/components/fragments/TeamSwitcher";
 import {
   Sidebar,
   SidebarContent,
@@ -143,16 +142,6 @@ const data = {
       url: "#",
       icon: Frame,
     },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
   ],
 };
 
@@ -163,8 +152,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects projects={data.projects} text="Guru" />
+        <NavProjects projects={data.projects} text="Siswa" />
+        <NavProjects projects={data.projects} text="Ruangan" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

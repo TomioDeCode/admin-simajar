@@ -1,4 +1,4 @@
-import { Typography } from "@/components/ellements/Typography";
+import { Typography } from "@/components/common/Typography";
 import { cn } from "@/lib/utils";
 import React from "react";
 
