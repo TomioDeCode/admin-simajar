@@ -1,5 +1,5 @@
-import Login from "@/components/layouts/Login";
+import LoginLayout from "@/components/layouts/LoginLayout";
 
 export default function Home() {
-  return <Login />;
+  return <LoginLayout />;
 }

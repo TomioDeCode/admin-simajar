@@ -13,6 +13,7 @@ import {
   Settings2,
   SquareTerminal,
 } from "lucide-react";
+import { PiDoor, PiGraduationCap, PiStudent } from "react-icons/pi";
 
 import { NavProjects } from "@/components/fragments/NavProjects";
 import { NavUser } from "@/components/fragments/NavUser";
@@ -25,7 +26,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
 const data = {
   user: {
     name: "shadcn",
@@ -38,109 +38,26 @@ const data = {
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },
+  ],
+  guru: [
     {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      name: "Guru",
+      url: "/guru",
+      icon: PiGraduationCap,
     },
   ],
-  navMain: [
+  murid: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
+      name: "Siswa",
+      url: "/siswa",
+      icon: PiStudent,
     },
   ],
-  projects: [
+  ruangan: [
     {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
+      name: "Ruangan",
+      url: "/ruangan",
+      icon: PiDoor,
     },
   ],
 };
@@ -152,9 +69,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.projects} text="Guru" />
-        <NavProjects projects={data.projects} text="Siswa" />
-        <NavProjects projects={data.projects} text="Ruangan" />
+        <NavProjects projects={data.guru} text="Guru" />
+        <NavProjects projects={data.murid} text="Siswa" />
+        <NavProjects projects={data.ruangan} text="Ruangan" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

@@ -1,37 +1,48 @@
 "use client";
 
-import { MoreHorizontal, type LucideIcon } from "lucide-react";
-
+import { ChevronRight, type LucideIcon } from "lucide-react";
+import { type IconType } from "react-icons";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
-export function NavProjects({
-  projects,
-  text,
-}: {
-  projects: {
-    name: string;
-    url: string;
-    icon: LucideIcon;
-  }[];
+interface ProjectItem {
+  name: string;
+  url: string;
+  icon: LucideIcon | IconType;
+}
+
+interface NavProjectsProps {
+  projects: ProjectItem[];
   text: string;
-}) {
+}
+
+export function NavProjects({ projects, text }: NavProjectsProps) {
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:block">
-      <SidebarGroupLabel>{text}</SidebarGroupLabel>
+    <SidebarGroup className="-mt-2.5">
+      <SidebarGroupLabel className="flex items-center gap-2">
+        <span>{text}</span>
+      </SidebarGroupLabel>
+
       <SidebarMenu>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild tooltip={item.name}>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
-              </a>
+        {projects.map((project) => (
+          <SidebarMenuItem key={project.name}>
+            <SidebarMenuButton
+              asChild
+              tooltip={project.name}
+              className="group/project relative"
+            >
+              <Link href={project.url} className="flex items-center gap-2">
+                <project.icon className="size-4 shrink-0 text-gray-500 group-hover/project:text-blue-500 transition-colors" />
+                <span className="flex-1 truncate">{project.name}</span>
+
+                <ChevronRight className="size-4 text-gray-400 opacity-0 group-hover/project:opacity-100 transition-all" />
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
