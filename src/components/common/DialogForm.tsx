@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,8 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil, Plus } from "lucide-react";
-import { useState, useCallback } from "react";
+import { Loader2, Pencil, Plus, X } from "lucide-react";
+import { useState, useCallback, ReactNode } from "react";
 import { FormFields } from "@/components/ellements/FormField";
 import { FormField as FormFieldType } from "@/types/form";
 
@@ -20,6 +22,7 @@ interface DialogFormProps {
   onSubmit: (data: Record<string, any>) => Promise<void> | void;
   initialData?: Record<string, any>;
   isUpdate?: boolean;
+  trigger?: ReactNode;
 }
 
 export function DialogForm({
@@ -29,6 +32,7 @@ export function DialogForm({
   onSubmit,
   initialData = {},
   isUpdate = false,
+  trigger,
 }: DialogFormProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,7 +59,8 @@ export function DialogForm({
             (acc, field) => ({
               ...acc,
               [field.id]:
-                initialData[field.id] ?? (field.type === "checkbox" ? false : ""),
+                initialData[field.id] ??
+                (field.type === "checkbox" ? false : ""),
             }),
             {}
           )
@@ -73,36 +78,46 @@ export function DialogForm({
     setFormData((prev) => ({ ...prev, [id]: value }));
   }, []);
 
+  const handleClose = useCallback(() => {
+    if (!isSubmitting) {
+      setOpen(false);
+    }
+  }, [isSubmitting]);
+
+  const defaultTrigger = isUpdate ? (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="hover:bg-gray-100 rounded-full focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 w-8 h-8"
+    >
+      <Pencil className="w-4 h-4 text-gray-600" />
+    </Button>
+  ) : (
+    <Button
+      variant="default"
+      className="flex items-center gap-2 shadow-sm hover:shadow-md px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium transition-all duration-200 group"
+    >
+      <Plus className="group-hover:rotate-90 w-4 h-4 transition-transform duration-200" />
+      <span>Create</span>
+    </Button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant={isUpdate ? "ghost" : "default"}
-          className="flex items-center gap-2 px-4 py-2 transition-colors duration-200"
-        >
-          {isUpdate ? (
-            <div className="w-6 h-6 flex items-center justify-center">
-              <Pencil className="w-4 h-4" />
-            </div>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" />
-              <span>Create</span>
-            </>
-          )}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <DialogHeader className="space-y-3">
-            <DialogTitle className="text-xl font-semibold tracking-tight">
+      <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
+
+      <DialogContent className="shadow-lg p-2 rounded-xl sm:max-w-[425px] overflow-hidden">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <DialogHeader className="relative space-y-3 bg-gradient-to-b from-gray-50 to-white p-6">
+            <DialogTitle className="font-semibold text-gray-900 text-xl tracking-tight">
               {title}
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-500">
+            <DialogDescription className="text-gray-500 text-sm leading-relaxed">
               {description}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-5">
+
+          <div className="space-y-5 mt-1 px-6 pt-1 max-h-[60vh] overflow-y-auto">
             {fields.map((field) => (
               <FormFields
                 key={field.id}
@@ -112,22 +127,32 @@ export function DialogForm({
               />
             ))}
           </div>
-          <DialogFooter className="flex gap-3 pt-4">
+
+          <DialogFooter className="flex gap-3 border-gray-100 bg-gradient-to-t from-gray-50 to-white p-6 border-t">
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
-              className="flex-1 px-4 py-2"
+              onClick={handleClose}
+              className="flex-1 border-gray-200 hover:bg-gray-50 disabled:opacity-50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 text-gray-700 hover:text-gray-900"
               disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="flex-1 px-4 py-2"
+              className="flex-1 justify-center items-center bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-white transition-all"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Loading..." : isUpdate ? "Update" : "Save"}
+              {isSubmitting ? (
+                <div className="flex justify-center items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Processing...</span>
+                </div>
+              ) : isUpdate ? (
+                "Update"
+              ) : (
+                "Save"
+              )}
             </Button>
           </DialogFooter>
         </form>

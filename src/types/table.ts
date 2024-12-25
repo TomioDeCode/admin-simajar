@@ -1,8 +1,31 @@
-export type DataType = {
+export type SiswaType = {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: "admin" | "student" | "teacher";
+  status: "active" | "inactive";
+  createdAt?: Date;
+  updatedAt?: Date;
+  class?: string;
+  studentId?: string;
+  phoneNumber?: string;
+  gender?: string;
+};
+
+export type GuruType = {
+  id: number;
+  name: string;
+  nip: string;
+  mapel: string;
+  gender: string;
+  status: string;
+};
+
+export type RuanganType = {
+  id: number;
+  name: string;
+  capacity: number;
+  type: string;
   status: string;
 };
 

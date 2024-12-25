@@ -1,17 +1,17 @@
 import React from "react";
 import { MainCard } from "@/components/core/MainCard";
-import { SiswaTable } from "@/components/features/siswa/SiswaTable";
+import { GuruTable } from "@/components/features/guru/GuruTable";
 import {
   TbGenderDemigirl,
   TbGenderDemiboy,
   TbGenderBigender,
 } from "react-icons/tb";
 
-const SiswaPage = () => {
-  const studentStats = [
+const GuruPage = () => {
+  const guruStats = [
     {
       amount: 2,
-      title: "Semua Murid",
+      title: "Semua Guru",
       icon: <TbGenderBigender className="w-6 h-6 text-primary" />
     },
     {
@@ -29,7 +29,7 @@ const SiswaPage = () => {
   return (
     <main className="space-y-2 p-6">
       <div className="gap-6 grid grid-cols-1 md:grid-cols-3">
-        {studentStats.map((stat, index) => (
+        {guruStats.map((stat, index) => (
           <MainCard
             key={index}
             amount={stat.amount}
@@ -38,9 +38,9 @@ const SiswaPage = () => {
           />
         ))}
       </div>
-      <SiswaTable />
+      <GuruTable />
     </main>
   );
 };
 
-export default SiswaPage;
+export default GuruPage;
