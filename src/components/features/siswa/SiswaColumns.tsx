@@ -2,10 +2,11 @@ import { ColumnDef } from "@tanstack/react-table";
 import { SiswaType } from "@/types/table";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { DialogForm } from "@/components/common/DialogForm";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SISWA_FIELDS } from "@/constants/field.constants";
 import { TbGenderDemiboy, TbGenderDemigirl } from "react-icons/tb";
+import { Badge } from "@/components/ui/badge";
 
 export const SiswaColumns = (
   data: SiswaType[],
@@ -15,10 +16,10 @@ export const SiswaColumns = (
     <Button
       variant="ghost"
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      className="hover:bg-transparent p-0 font-semibold"
+      className="hover:bg-transparent p-0 font-medium"
     >
       {label}
-      <ArrowUpDown className="ml-2 w-4 h-4" />
+      <ArrowUpDown className="ml-2 h-4 w-4" />
     </Button>
   );
 
@@ -47,14 +48,24 @@ export const SiswaColumns = (
       accessorKey: "name",
       header: ({ column }) => createSortableHeader("Nama", column),
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("name")}</div>
+        <div className="flex flex-col md:flex-row md:items-center gap-1">
+          <span className="font-medium">{row.getValue("name")}</span>
+          <div className="flex items-center gap-2 md:hidden text-gray-500">
+            <Badge variant="outline" className="text-xs">
+              {row.getValue("studentId")}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {row.getValue("class")}
+            </Badge>
+          </div>
+        </div>
       ),
     },
     {
       accessorKey: "studentId",
       header: ({ column }) => createSortableHeader("NIS", column),
       cell: ({ row }) => (
-        <div className="font-medium text-gray-600">
+        <div className="hidden md:block font-medium text-gray-600">
           {row.getValue("studentId")}
         </div>
       ),
@@ -63,8 +74,12 @@ export const SiswaColumns = (
       accessorKey: "email",
       header: ({ column }) => createSortableHeader("Email", column),
       cell: ({ row }) => (
-        <div className="text-blue-600 hover:underline">
-          <a href={`mailto:${row.getValue("email")}`}>
+        <div className="flex items-center gap-2">
+          <Mail className="h-4 w-4 text-gray-500 md:hidden" />
+          <a
+            href={`mailto:${row.getValue("email")}`}
+            className="text-blue-600 hover:underline truncate max-w-[200px] md:max-w-none"
+          >
             {row.getValue("email")}
           </a>
         </div>
@@ -74,8 +89,10 @@ export const SiswaColumns = (
       accessorKey: "class",
       header: ({ column }) => createSortableHeader("Kelas", column),
       cell: ({ row }) => (
-        <div className="px-2 py-1 rounded-full bg-primary/10 text-primary text-center w-fit">
-          {row.getValue("class")}
+        <div className="hidden md:block">
+          <Badge variant="secondary" className="font-medium">
+            {row.getValue("class")}
+          </Badge>
         </div>
       ),
     },
@@ -85,16 +102,18 @@ export const SiswaColumns = (
       cell: ({ row }) => {
         const gender = row.getValue("gender");
         return (
-          <div className="flex items-center gap-2 font-medium">
+          <div className="flex items-center gap-2">
             {gender === "L" ? (
               <>
-                <TbGenderDemiboy className="w-5 h-5 text-blue-600" />
-                <span>Laki-laki</span>
+                <TbGenderDemiboy className="h-4 w-4 text-blue-600" />
+                <span className="hidden md:inline">Laki-laki</span>
+                <span className="md:hidden">L</span>
               </>
             ) : (
               <>
-                <TbGenderDemigirl className="w-5 h-5 text-pink-600" />
-                <span>Perempuan</span>
+                <TbGenderDemigirl className="h-4 w-4 text-pink-600" />
+                <span className="hidden md:inline">Perempuan</span>
+                <span className="md:hidden">P</span>
               </>
             )}
           </div>
@@ -107,9 +126,13 @@ export const SiswaColumns = (
       cell: ({ row }) => {
         const phone = row.getValue("phoneNumber");
         return (
-          <div className="text-gray-600">
+          <div className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-gray-500 md:hidden" />
             {phone ? (
-              <a href={`tel:${phone}`} className="hover:text-blue-600">
+              <a
+                href={`tel:${phone}`}
+                className="text-gray-600 hover:text-blue-600 truncate max-w-[150px] md:max-w-none"
+              >
                 {phone as string}
               </a>
             ) : (
@@ -125,7 +148,7 @@ export const SiswaColumns = (
       cell: ({ row }) => {
         const rowData = row.original;
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center justify-end gap-2">
             <DialogForm
               title="Update Siswa"
               description="Edit informasi siswa"

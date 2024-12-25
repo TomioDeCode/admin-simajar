@@ -19,11 +19,3 @@ export interface FormField {
   min?: number;
   max?: number;
 }
-
-export interface DataType {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
-}

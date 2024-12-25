@@ -6,14 +6,16 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { DataType } from "@/types/table";
+import { GuruType, RuanganType, SiswaType } from "@/types/table";
 import { memo } from "react";
 
 interface TablePaginationProps {
-  table: Table<DataType>;
+  table: Table<GuruType | RuanganType | SiswaType | any>;
 }
 
-export const TablePagination = memo(function TablePagination({ table }: TablePaginationProps) {
+export const TablePagination = memo(function TablePagination({
+  table,
+}: TablePaginationProps) {
   const { pageIndex } = table.getState().pagination;
   const pageCount = table.getPageCount();
   const canPreviousPage = table.getCanPreviousPage();
