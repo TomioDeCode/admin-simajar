@@ -29,6 +29,16 @@ export type RuanganType = {
   status: string;
 };
 
+export interface Generation {
+  id: string;
+  number: number;
+  start_date: string;
+  end_date: string;
+  created_at: string;
+  updated_at: string;
+  is_graduated: boolean;
+}
+
 export type SortingState = {
   id: string;
   desc: boolean;

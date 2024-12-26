@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { fetchData } from "@/utils/fetchData";
 import { useRouter } from "next/navigation";
 import { clientAuth } from "@/utils/clientAuth.ts";
@@ -41,15 +41,15 @@ export function LoginForm({
 
   const router = useRouter();
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setCredentials(prev => ({
+    setCredentials((prev) => ({
       ...prev,
       [name]: value,
     }));
-  }, []);
+  };
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -59,43 +59,42 @@ export function LoginForm({
         method: "POST",
         body: JSON.stringify(credentials),
         requireAuth: false,
-        timeout: 10000,
-        retryCount: 2,
-        retryDelay: 1000,
         headers: {
           "Content-Type": "application/json",
         },
       });
 
+      console.log(response.data);
+
       if (!response.is_success) {
-        throw new Error(response.error || "Login failed. Please try again.");
+        setError(response.error || "Login gagal. Silakan coba lagi.");
+        return;
       }
 
-      if (!response.data?.token) {
-        throw new Error("Invalid response from server");
+      if (response.data?.token) {
+        clientAuth.setToken(response.data.token);
+        router.push("/dashboard");
+      } else {
+        setError("Respon server tidak valid");
       }
-
-      clientAuth.setToken(response.data.token);
-      router.push("/dashboard");
-
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred during login.");
+      setError("Terjadi kesalahan saat login.");
       console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [credentials, router]);
+  };
 
   return (
-    <Card className={cn("w-full max-w-md mx-auto", className)} {...props}>
+    <Card className={cn("w-full", className)} {...props}>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-semibold text-center">Welcome back</CardTitle>
-        <CardDescription className="text-center">
-          Enter your email below to login to your account
+        <CardTitle className="text-2xl font-semibold">Selamat Datang Kembali</CardTitle>
+        <CardDescription>
+          Masukkan email Anda untuk login ke akun Anda
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -103,17 +102,15 @@ export function LoginForm({
                 id="email"
                 name="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="email@contoh.com"
                 value={credentials.email}
                 onChange={handleInputChange}
                 required
                 disabled={isLoading}
-                autoComplete="email"
-                className="w-full"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Kata Sandi</Label>
               <Input
                 id="password"
                 name="password"
@@ -122,19 +119,13 @@ export function LoginForm({
                 onChange={handleInputChange}
                 required
                 disabled={isLoading}
-                autoComplete="current-password"
-                className="w-full"
               />
             </div>
             {error && (
-              <p className="text-sm text-red-500 font-medium text-center">{error}</p>
+              <p className="text-sm text-red-500 font-medium">{error}</p>
             )}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || !credentials.email || !credentials.password}
-            >
-              {isLoading ? "Logging in..." : "Login"}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Sedang Login..." : "Login"}
             </Button>
           </div>
         </form>

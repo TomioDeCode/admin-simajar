@@ -143,3 +143,24 @@ export const RUANGAN_FIELDS: FormField[] = [
     required: true,
   },
 ];
+
+export const GENERATION_FIELDS: FormField[] = [
+  {
+    id: "number",
+    label: "Nomor",
+    type: "number",
+    required: true,
+  },
+  {
+    id: "start_date",
+    label: "Tanggal Mulai",
+    type: "date",
+    required: true,
+  },
+  {
+    id: "end_date",
+    label: "Tanggal Selesai",
+    type: "date",
+    required: true,
+  },
+];

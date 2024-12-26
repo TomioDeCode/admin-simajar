@@ -66,7 +66,11 @@ export function DialogForm({
           )
         );
       } catch (error) {
-        console.error("Form submission error:", error);
+        console.error("Form submission error:", {
+          error,
+          formData,
+          component: "DialogForm"
+        });
       } finally {
         setIsSubmitting(false);
       }

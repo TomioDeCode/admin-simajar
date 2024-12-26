@@ -2,6 +2,7 @@ import { ApiResponse, FetchConfig } from "@/types/api";
 import { FETCH_CONSTANTS } from "@/constants/fetch.constants";
 import { FetchError } from "@/utils/errors";
 import { delay, createHeaders } from "@/utils/helpers";
+import { getToken } from "./serverAuth";
 
 /**
  * Performs a fetch request with retry capability and timeout handling
@@ -18,19 +19,33 @@ async function fetchWithRetry(
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
         controller.abort();
-        reject(new FetchError(`Request timeout after ${timeout}ms`, FETCH_CONSTANTS.STATUS.TIMEOUT));
+        reject(
+          new FetchError(
+            `Request timeout after ${timeout}ms`,
+            FETCH_CONSTANTS.STATUS.TIMEOUT
+          )
+        );
       }, timeout);
     });
 
     const fetchPromise = fetch(url, {
       ...config,
+      headers: config.headers,
       signal: controller.signal,
     });
 
     const response = await Promise.race([fetchPromise, timeoutPromise]);
 
+    if (response.status === 401) {
+      throw new FetchError(
+        "Unauthorized - Please login again",
+        FETCH_CONSTANTS.STATUS.UNAUTHORIZED
+      );
+    }
+
     const shouldRetry =
       !response.ok &&
+      response.status !== 401 &&
       attempt < (config.retryCount ?? FETCH_CONSTANTS.RETRY_COUNT);
 
     if (shouldRetry) {
@@ -98,7 +113,7 @@ function handleError(error: unknown): ApiResponse<never> {
 }
 
 /**
- * Main fetch function that handles authentication, retries, and error handling
+ * Main fetch function that handles authentication and error handling
  */
 export async function fetchData<T>(
   url: string,
@@ -109,10 +124,20 @@ export async function fetchData<T>(
   try {
     const headers = createHeaders(requireAuth, restConfig.headers);
 
+    if (requireAuth) {
+      const token = await getToken();
+      if (!token) {
+        throw new FetchError(
+          "Unauthorized - Please login again",
+          FETCH_CONSTANTS.STATUS.UNAUTHORIZED
+        );
+      }
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
     const response = await fetchWithRetry(url, {
       ...restConfig,
       headers,
-      credentials: "include",
     });
 
     return parseResponse<T>(response);
