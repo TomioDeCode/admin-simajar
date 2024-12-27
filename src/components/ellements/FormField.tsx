@@ -87,6 +87,21 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
         );
 
       default:
+        if (field.type === "datetime-local" && value) {
+          const date = new Date(value);
+          const formattedDate = date.toISOString().slice(0, 16);
+          return (
+            <Input
+              {...commonProps}
+              type={field.type}
+              value={formattedDate}
+              onChange={(e) => onChange(e.target.value)}
+              required={field.required}
+              min={field.min}
+              max={field.max}
+            />
+          );
+        }
         return (
           <Input
             {...commonProps}

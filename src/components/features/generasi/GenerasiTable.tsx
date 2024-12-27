@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/fragments/TablePagination";
 import { TableSearch } from "@/components/fragments/TableSearch";
-import { ArrowUpDown, Plus, ChevronDown } from "lucide-react";
+import { ArrowUpDown, Plus, ChevronDown, CloudCog } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
@@ -58,19 +58,36 @@ export function GenerasiTable() {
   const data = response?.data?.data || [];
   const totalItems = response?.data?.total || 0;
 
+  const formatDateForAPI = (date: string | Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  };
+
   const handleSubmit = useCallback(
     async (formData: Partial<Generation>) => {
       try {
+        const formattedFormData = {
+          ...formData,
+          number: parseInt(String(formData.number)),
+          start_date: formData.start_date
+            ? new Date(formData.start_date).toISOString().split('T')[0] + 'T00:00:00Z'
+            : null,
+          end_date: formData.end_date
+            ? new Date(formData.end_date).toISOString().split('T')[0] + 'T00:00:00Z'
+            : null,
+        };
+
         const response = await fetchData<Generation>(GENERATIONS_ENDPOINT, {
           method: "POST",
-          body: JSON.stringify(formData),
+          body: JSON.stringify(formattedFormData),
           requireAuth: true,
           headers: {
             "Content-Type": "application/json",
           },
         });
 
-        if (response.is_success && response.data) {
+        if (response.is_success) {
           toast.success("Berhasil menambahkan generasi baru");
           refetch();
         } else {
@@ -85,13 +102,25 @@ export function GenerasiTable() {
   );
 
   const handleUpdate = useCallback(
-    async (id: string, newData: Partial<Generation>) => {
+    async (id: string, formData: Partial<Generation>) => {
       try {
+        const formattedFormData = {
+          ...formData,
+          number: parseInt(String(formData.number)),
+          start_date: formData.start_date
+            ? new Date(formData.start_date).toISOString().split('T')[0] + 'T00:00:00Z'
+            : undefined,
+          end_date: formData.end_date
+            ? new Date(formData.end_date).toISOString().split('T')[0] + 'T00:00:00Z'
+            : undefined,
+          is_graduated: Boolean(formData.is_graduated)
+        };
+
         const response = await fetchData<Generation>(
           `${GENERATIONS_ENDPOINT}/${id}`,
           {
             method: "PUT",
-            body: JSON.stringify(newData),
+            body: JSON.stringify(formattedFormData),
             requireAuth: true,
             headers: {
               "Content-Type": "application/json",

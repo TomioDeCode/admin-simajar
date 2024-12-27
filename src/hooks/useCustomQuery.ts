@@ -7,16 +7,15 @@ interface UseCustomQueryOptions<T> extends Omit<UseQueryOptions<ApiResponse<T>, 
   fetchConfig?: FetchConfig
 }
 
-export function useCustomQuery<T>({ 
-  url, 
+export function useCustomQuery<T>({
+  url,
   fetchConfig,
-  ...options 
+  ...options
 }: UseCustomQueryOptions<T>) {
   return useQuery({
     ...options,
     queryFn: async () => {
       const response = await fetchData<T>(url, fetchConfig)
-      console.log(response)
       return response
     }
   })

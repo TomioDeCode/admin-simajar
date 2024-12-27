@@ -2,9 +2,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Generation } from "@/types/table";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { DialogForm } from "@/components/common/DialogForm";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, CloudCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GENERATION_FIELDS } from "@/constants/field.constants";
+import { GENERATION_FIELDS, UPDATE_GENERATION_FIELDS } from "@/constants/field.constants";
 
 export const createColumns = (
   data: Generation[],
@@ -38,7 +38,7 @@ export const createColumns = (
       ),
     },
     {
-      accessorKey: "end_date", 
+      accessorKey: "end_date",
       header: ({ column }) => createSortableHeader("Tanggal Selesai", column),
       cell: ({ row }) => (
         <span className="font-medium">{row.getValue("end_date")}</span>
@@ -51,11 +51,10 @@ export const createColumns = (
         const isGraduated = row.getValue("is_graduated");
         return (
           <div
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              isGraduated
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isGraduated
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+              }`}
           >
             {isGraduated ? "Graduated" : "Not Graduated"}
           </div>
@@ -72,7 +71,7 @@ export const createColumns = (
             <DialogForm
               title="Update Generasi"
               description="Edit informasi generasi"
-              fields={GENERATION_FIELDS}
+              fields={UPDATE_GENERATION_FIELDS}
               initialData={rowData}
               isUpdate
               onSubmit={(newData) => handleUpdate(rowData.id, newData)}

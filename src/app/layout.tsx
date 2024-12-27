@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import "./globals.css";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { Providers } from "./providers";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
+        <Toaster />
         <Providers>
           <ErrorBoundary>{children}</ErrorBoundary>
         </Providers>

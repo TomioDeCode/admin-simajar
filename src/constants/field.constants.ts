@@ -164,3 +164,30 @@ export const GENERATION_FIELDS: FormField[] = [
     required: true,
   },
 ];
+
+export const UPDATE_GENERATION_FIELDS: FormField[] = [
+  {
+    id: "number",
+    label: "Nomor",
+    type: "number",
+    required: true,
+  },
+  {
+    id: "start_date",
+    label: "Tanggal Mulai",
+    type: "datetime-local",
+    required: true,
+  },
+  {
+    id: "end_date",
+    label: "Tanggal Selesai",
+    type: "datetime-local",
+    required: true,
+  },
+  {
+    id: "is_graduated",
+    label: "Lulus",
+    type: "checkbox",
+    required: true
+  }
+];
