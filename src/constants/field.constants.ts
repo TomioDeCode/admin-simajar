@@ -154,13 +154,13 @@ export const GENERATION_FIELDS: FormField[] = [
   {
     id: "start_date",
     label: "Tanggal Mulai",
-    type: "date",
+    type: "datetime-local",
     required: true,
   },
   {
     id: "end_date",
     label: "Tanggal Selesai",
-    type: "date",
+    type: "datetime-local",
     required: true,
   },
 ];

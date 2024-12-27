@@ -72,8 +72,6 @@ export function GenerasiTable() {
 
         if (response.is_success && response.data) {
           toast.success("Berhasil menambahkan generasi baru");
-          console.log(response.data)
-          console.log(response.is_success)
           refetch();
         } else {
           throw new Error(response.error || "Failed to add generation");
@@ -205,9 +203,8 @@ export function GenerasiTable() {
               <div className="font-medium text-gray-900">{rowData.name}</div>
             </div>
             <ChevronDown
-              className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-                isExpanded ? "rotate-180" : ""
-              }`}
+              className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""
+                }`}
             />
           </div>
           {isExpanded && (
