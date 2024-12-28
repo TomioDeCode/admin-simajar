@@ -8,7 +8,8 @@ import { RUANGAN_FIELDS } from "@/constants/field.constants";
 
 export const RuanganColumns = (
   data: RuanganType[],
-  setData: React.Dispatch<React.SetStateAction<RuanganType[]>>
+  handleUpdate: (id: string, newData: Partial<RuanganType>) => void,
+  handleDelete: (id: string) => void
 ): ColumnDef<RuanganType>[] => {
   const createSortableHeader = (label: string, column: any) => (
     <Button
@@ -21,71 +22,25 @@ export const RuanganColumns = (
     </Button>
   );
 
-  const handleUpdate = (
-    rowData: RuanganType,
-    newData: Partial<RuanganType>
-  ): void => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === rowData.id ? { ...item, ...newData } : item
-      )
-    );
-  };
-
-  const handleDelete = (id: number): void => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-  };
-
   return [
     {
-      accessorKey: "name",
-      header: ({ column }) => createSortableHeader("Nama Ruangan", column),
+      accessorKey: "number",
+      header: ({ column }) => createSortableHeader("Nomor Ruangan", column),
     },
     {
-      accessorKey: "capacity",
-      header: ({ column }) => createSortableHeader("Kapasitas", column),
-    },
-    {
-      accessorKey: "type",
-      header: ({ column }) => createSortableHeader("Tipe Ruangan", column),
+      accessorKey: "is_practice_room",
+      header: ({ column }) => createSortableHeader("Jenis Ruangan", column),
       cell: ({ row }) => {
-        const type = row.getValue("type");
-        const typeLabels = {
-          kelas: "Ruang Kelas",
-          lab: "Laboratorium",
-          other: "Lainnya",
-        };
-        return typeLabels[type as keyof typeof typeLabels];
+        const isPracticeRoom = row.getValue("is_practice_room");
+        return isPracticeRoom ? "Ruang Praktik" : "Ruang Teori";
       },
     },
     {
-      accessorKey: "status",
-      header: ({ column }) => createSortableHeader("Status", column),
+      accessorKey: "major_id",
+      header: ({ column }) => createSortableHeader("Jurusan", column),
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
-        const statusConfig = {
-          available: {
-            label: "Tersedia",
-            className: "text-green-600",
-          },
-          maintenance: {
-            label: "Dalam Perbaikan",
-            className: "text-yellow-600",
-          },
-          used: {
-            label: "Sedang Digunakan",
-            className: "text-red-600",
-          },
-        };
-        const config = statusConfig[status as keyof typeof statusConfig] || {
-          label: status,
-          className: "text-gray-600"
-        };
-        return (
-          <div className={`font-medium ${config.className}`}>
-            {config.label}
-          </div>
-        );
+        const majorId = row.getValue("major_id");
+        return majorId ? "Ada" : "Umum";
       },
     },
     {
@@ -101,7 +56,7 @@ export const RuanganColumns = (
               fields={RUANGAN_FIELDS}
               initialData={rowData}
               isUpdate
-              onSubmit={(newData) => handleUpdate(rowData, newData)}
+              onSubmit={(newData) => handleUpdate(rowData.id, newData)}
             />
             <DeleteDialog
               text="Ruangan"

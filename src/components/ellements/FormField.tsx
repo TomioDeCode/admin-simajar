@@ -1,3 +1,5 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField } from "@/types/form";
+import { useEffect, useState } from "react";
 
 interface FormFieldProps {
   field: FormField;
@@ -19,8 +22,25 @@ interface FormFieldProps {
 }
 
 export function FormFields({ field, value, onChange }: FormFieldProps) {
-  const renderRadioOptions = () => (
-    field.options?.map((option) => (
+  const [radioOptions, setRadioOptions] = useState<{value: string, label: string}[]>([]);
+  const [selectOptions, setSelectOptions] = useState<{value: string, label: string}[]>([]);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      if (field.options) {
+        const options = typeof field.options === 'function' ? await field.options() : field.options;
+        if (field.type === 'radio') {
+          setRadioOptions(options);
+        } else if (field.type === 'select') {
+          setSelectOptions(options);
+        }
+      }
+    };
+    loadOptions();
+  }, [field.options, field.type]);
+
+  const renderRadioOptions = () => {
+    return radioOptions.map((option) => (
       <div key={option.value} className="flex items-center space-x-2">
         <RadioGroupItem
           value={option.value}
@@ -30,16 +50,16 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
           {option.label}
         </Label>
       </div>
-    ))
-  );
+    ));
+  };
 
-  const renderSelectOptions = () => (
-    field.options?.map((option) => (
+  const renderSelectOptions = () => {
+    return selectOptions.map((option) => (
       <SelectItem key={option.value} value={option.value}>
         {option.label}
       </SelectItem>
-    ))
-  );
+    ));
+  };
 
   const renderField = () => {
     const commonProps = {

@@ -1,4 +1,5 @@
 import { FormField } from "@/types/form";
+import { fetchData } from "@/utils/fetchData";
 
 export const SISWA_FIELDS: FormField[] = [
   {
@@ -107,41 +108,34 @@ export const GURU_FIELDS: FormField[] = [
 
 export const RUANGAN_FIELDS: FormField[] = [
   {
-    id: "name",
-    label: "Nama Ruangan",
-    type: "text",
-    placeholder: "Masukkan nama ruangan",
-    required: true,
-  },
-  {
-    id: "capacity",
-    label: "Kapasitas",
+    id: "number",
+    label: "Nomor Ruangan",
     type: "number",
-    placeholder: "Masukkan kapasitas ruangan",
+    placeholder: "Masukkan nomor ruangan",
     required: true,
   },
   {
-    id: "type",
-    label: "Tipe Ruangan",
-    type: "select",
-    options: [
-      { value: "kelas", label: "Ruang Kelas" },
-      { value: "lab", label: "Laboratorium" },
-      { value: "other", label: "Lainnya" },
-    ],
+    id: "is_practice_room",
+    label: "Jenis Ruangan",
+    type: "checkbox",
     required: true,
   },
   {
-    id: "status",
-    label: "Status",
+    id: "major_id",
+    label: "Jurusan",
     type: "select",
-    options: [
-      { value: "available", label: "Tersedia" },
-      { value: "maintenance", label: "Dalam Perbaikan" },
-      { value: "used", label: "Sedang Digunakan" },
-    ],
-    required: true,
-  },
+    options: async () => {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+      const { data } = await fetchData(`${API_URL}/majors/list`, {
+        requireAuth: true
+      });
+      return (data as Array<{ id: string; name: string }>).map((major) => ({
+        value: major.id,
+        label: major.name
+      }));
+    },
+    required: false,
+  }
 ];
 
 export const GENERATION_FIELDS: FormField[] = [

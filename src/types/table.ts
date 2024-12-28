@@ -22,11 +22,12 @@ export type GuruType = {
 };
 
 export type RuanganType = {
-  id: number;
-  name: string;
-  capacity: number;
-  type: string;
-  status: string;
+  id: string;
+  created_at: string;
+  updated_at: string; 
+  number: number;
+  is_practice_room: boolean;
+  major_id: string | null;
 };
 
 export interface Generation {

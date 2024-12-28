@@ -18,65 +18,147 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TablePagination } from "@/components/fragments/TablePagination";
 import { TableSearch } from "@/components/fragments/TableSearch";
+import { RuanganColumns } from "./RuanganColums";
 import { RuanganType } from "@/types/table";
-import { ArrowUpDown, Plus, ChevronDown } from "lucide-react";
+import { ArrowUpDown, Plus, ChevronDown, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
 import { RUANGAN_FIELDS } from "@/constants/field.constants";
-import { RuanganColumns } from "./RuanganColums";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
-
-const INITIAL_DATA: RuanganType[] = [
-  {
-    id: 1,
-    name: "Ruang 101",
-    capacity: 30,
-    type: "kelas",
-    status: "available",
-  },
-  {
-    id: 2,
-    name: "Lab Komputer", 
-    capacity: 25,
-    type: "lab",
-    status: "maintenance",
-  },
-];
+import { useCustomQuery } from "@/hooks/useCustomQuery";
+import { toast } from "sonner";
+import { fetchData } from "@/utils/fetchData";
+import { useMutation } from "@tanstack/react-query";
 
 export function RuanganTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filtering, setFiltering] = useState("");
-  const [data, setData] = useState<RuanganType[]>(INITIAL_DATA);
-  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+  const [pageIndex, setPageIndex] = useState(0);
+  const pageSize = 5;
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const RUANGAN_ENDPOINT = `${API_URL}/rooms`;
+
+  const {
+    data: response,
+    isLoading,
+    error,
+    refetch,
+  } = useCustomQuery<{ data: RuanganType[]; total_data: number }>({
+    url: `${RUANGAN_ENDPOINT}?perPage=${pageSize}&page=${pageIndex + 1}`,
+    queryKey: ["rooms", pageIndex, pageSize],
+    fetchConfig: {
+      requireAuth: true,
+    },
+  });
+
+  const { mutateAsync: createRuangan } = useMutation({
+    mutationFn: (data: Partial<RuanganType>) =>
+      fetchData(RUANGAN_ENDPOINT, {
+        method: 'POST',
+        requireAuth: true,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+  });
+
+  const { mutateAsync: updateRuangan } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<RuanganType> }) =>
+      fetchData(`${RUANGAN_ENDPOINT}/${id}`, {
+        method: 'PUT',
+        requireAuth: true,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+  });
+
+  const { mutateAsync: deleteRuangan } = useMutation({
+    mutationFn: (id: string) =>
+      fetchData(`${RUANGAN_ENDPOINT}/${id}`, {
+        method: 'DELETE',
+        requireAuth: true
+      })
+  });
+
+  const data = response?.data?.data || [];
+  const totalItems = response?.data?.total_data || 0;
 
   const handleSubmit = useCallback(
-    (formData: Partial<RuanganType>) => {
-      const newItem: RuanganType = {
-        id: data.length + 1,
-        name: formData.name ?? "",
-        capacity: formData.capacity ?? 0,
-        type: formData.type ?? "kelas",
-        status: formData.status ?? "available",
-      };
-      setData((prevData) => [...prevData, newItem]);
+    async (formData: Partial<RuanganType>) => {
+      try {
+        const transformedData = {
+          ...formData,
+          number: formData.number ? Number(formData.number) : undefined
+        };
+
+        const response = await createRuangan(transformedData);
+
+        if (response.is_success) {
+          toast.success("Berhasil menambahkan ruangan baru");
+          refetch();
+        } else {
+          throw new Error(response.error || "Failed to add room");
+        }
+      } catch (err) {
+        toast.error("Gagal menambahkan ruangan");
+        console.error("Error creating room:", err);
+      }
     },
-    [data.length]
+    [createRuangan, refetch]
   );
 
-  const handleUpdate = useCallback((id: number, newData: Partial<RuanganType>) => {
-    setData((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...newData } : item))
-    );
-  }, []);
+  const handleUpdate = useCallback(
+    async (id: string, formData: Partial<RuanganType>) => {
+      try {
+        const transformedData = {
+          ...formData,
+          number: formData.number ? Number(formData.number) : undefined
+        };
 
-  const handleDelete = useCallback((id: number) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-  }, []);
+        const response = await updateRuangan({
+          id: id,
+          data: transformedData
+        });
 
-  const columns = useMemo(() => RuanganColumns(data, setData), [data]);
+        if (response.is_success) {
+          toast.success("Berhasil memperbarui ruangan");
+          refetch();
+        } else {
+          throw new Error(response.error || "Failed to update room");
+        }
+      } catch (err) {
+        toast.error("Gagal memperbarui ruangan");
+        console.error("Error updating room:", err);
+      }
+    },
+    [updateRuangan, refetch]
+  );
+
+  const handleDelete = useCallback(
+    async (id: string) => {
+      try {
+        const response = await deleteRuangan(id);
+
+        if (response.is_success) {
+          toast.success("Berhasil menghapus ruangan");
+          refetch();
+        } else {
+          throw new Error(response.error || "Failed to delete room");
+        }
+      } catch (err) {
+        toast.error("Gagal menghapus ruangan");
+        console.error("Error deleting room:", err);
+      }
+    },
+    [deleteRuangan, refetch]
+  );
+
+  const columns = useMemo(
+    () => RuanganColumns(data, handleUpdate, handleDelete),
+    [data, handleUpdate, handleDelete]
+  );
 
   const table = useReactTable({
     data,
@@ -88,154 +170,232 @@ export function RuanganTable() {
     state: {
       sorting,
       globalFilter: filtering,
+      pagination: {
+        pageIndex,
+        pageSize,
+      },
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setFiltering,
-    initialState: {
-      pagination: {
-        pageSize: 1,
-      },
-    },
+    manualPagination: true,
+    pageCount: Math.ceil(totalItems / pageSize),
   });
 
-  const toggleRowExpansion = useCallback((rowId: number) => {
+  const PaginationControls = () => {
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    return (
+      <div className="flex items-center justify-between px-2 py-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex(0)}
+            disabled={pageIndex === 0}
+            className="hidden sm:inline-flex"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex(prev => Math.max(0, prev - 1))}
+            disabled={pageIndex === 0}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="flex items-center gap-1 text-sm font-medium">
+            Page {pageIndex + 1} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex(prev => Math.min(totalPages - 1, prev + 1))}
+            disabled={pageIndex >= totalPages - 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex(totalPages - 1)}
+            disabled={pageIndex >= totalPages - 1}
+            className="hidden sm:inline-flex"
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="text-sm text-gray-600">
+          Total {totalItems} items
+        </div>
+      </div>
+    );
+  };
+
+  const toggleRowExpansion = useCallback((rowId: string) => {
     setExpandedRows((prev) => ({
       ...prev,
       [rowId]: !prev[rowId],
     }));
   }, []);
 
-  const getStatusStyles = useCallback((status: string) => {
-    const styles = {
-      available: "bg-green-100 text-green-800",
-      maintenance: "bg-yellow-100 text-yellow-800",
-      default: "bg-red-100 text-red-800"
-    };
-    return styles[status as keyof typeof styles] || styles.default;
-  }, []);
+  const renderMobileRow = useCallback(
+    (row: any) => {
+      const isExpanded = expandedRows[row.id];
+      const rowData = row.original;
 
-  const renderMobileRow = useCallback((row: any) => {
-    const isExpanded = expandedRows[row.id];
-    const rowData = row.original;
-
-    return (
-      <div key={row.id} className="border-b border-gray-200 last:border-0">
-        <div
-          className="flex items-center justify-between p-4 cursor-pointer"
-          onClick={() => toggleRowExpansion(row.id)}
-        >
-          <div className="flex-1">
-            <div className="font-medium">{rowData.name}</div>
-            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-              <Badge variant="outline" className="text-xs capitalize">
-                {rowData.type}
-              </Badge>
-              <Badge className={`text-xs capitalize ${getStatusStyles(rowData.status)}`}>
-                {rowData.status}
-              </Badge>
+      return (
+        <div key={row.id} className="border-b border-gray-200 last:border-0">
+          <div
+            className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200"
+            onClick={() => toggleRowExpansion(row.id)}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                toggleRowExpansion(row.id);
+              }
+            }}
+          >
+            <div className="flex-1">
+              <div className="font-medium text-gray-900">{rowData.number}</div>
+              <div className="text-sm text-gray-500">{rowData.name}</div>
             </div>
+            <ChevronDown
+              className={`w-5 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+            />
           </div>
-          <ChevronDown
-            className={`w-5 h-5 text-gray-400 transition-transform ${
-              isExpanded ? "rotate-180" : ""
-            }`}
-          />
+          {isExpanded && (
+            <div className="px-4 pb-4 space-y-3 bg-gray-50">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-500">Kapasitas:</span>
+                <span className="font-medium text-gray-900">{rowData.capacity}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-500">Status:</span>
+                <span className="font-medium text-gray-900">{rowData.status}</span>
+              </div>
+              <div className="flex items-center gap-2 pt-3 border-t">
+                <DialogForm
+                  title="Update Ruangan"
+                  description="Edit informasi ruangan"
+                  fields={RUANGAN_FIELDS}
+                  initialData={rowData}
+                  isUpdate
+                  onSubmit={(newData) => handleUpdate(rowData.id, newData)}
+                />
+                <DeleteDialog
+                  text="Ruangan"
+                  onConfirm={() => handleDelete(rowData.id)}
+                />
+              </div>
+            </div>
+          )}
         </div>
-        {isExpanded && (
-          <div className="px-4 pb-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-500">Kapasitas:</span>
-              <span className="font-medium">{rowData.capacity} orang</span>
-            </div>
+      );
+    },
+    [expandedRows, handleUpdate, handleDelete, toggleRowExpansion]
+  );
 
-            <div className="flex items-center gap-2 pt-2 border-t">
-              <DialogForm
-                title="Update Ruangan"
-                description="Edit informasi ruangan"
-                fields={RUANGAN_FIELDS}
-                initialData={rowData}
-                isUpdate
-                onSubmit={(newData) => handleUpdate(rowData.id, newData)}
-              />
-              <DeleteDialog
-                text="Ruangan"
-                onConfirm={() => handleDelete(rowData.id)}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }, [expandedRows, handleUpdate, handleDelete, getStatusStyles, toggleRowExpansion]);
-
-  const renderDesktopTable = useMemo(() => (
-    <div className="border-gray-200 bg-white ring-opacity-5 shadow-lg border rounded-xl ring-1 ring-black overflow-x-auto">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow
-              key={headerGroup.id}
-              className="bg-gradient-to-r from-gray-50 hover:from-gray-100 to-gray-100 hover:to-gray-200"
-            >
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  onClick={
-                    header.column.getCanSort()
-                      ? header.column.getToggleSortingHandler()
-                      : undefined
-                  }
-                  className="whitespace-nowrap px-4 py-3 text-left text-sm font-semibold text-gray-700"
-                >
-                  <div className="flex items-center gap-2">
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                    {header.column.getCanSort() && (
-                      <ArrowUpDown className="w-4 h-4 text-gray-400" />
-                    )}
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
+  const renderDesktopTable = useCallback(
+    () => (
+      <div className="border-gray-200 bg-white ring-opacity-5 shadow-lg border rounded-xl ring-1 ring-black overflow-hidden">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
-                key={row.id}
-                className="border-gray-100 hover:bg-gray-50/80"
+                key={headerGroup.id}
+                className="bg-gradient-to-r from-gray-50 hover:from-gray-100 to-gray-100 hover:to-gray-200 transition-colors duration-200"
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className="px-4 py-3 text-sm text-gray-600"
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    onClick={
+                      header.column.getCanSort()
+                        ? header.column.getToggleSortingHandler()
+                        : undefined
+                    }
+                    className="whitespace-nowrap px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50/50 transition-colors duration-200"
                   >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+                    <div className="flex items-center gap-2">
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                      {header.column.getCanSort() && (
+                        <ArrowUpDown className="w-4 h-4 text-gray-400" />
+                      )}
+                    </div>
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-32 text-center">
-                <div className="flex flex-col justify-center items-center space-y-2">
-                  <p className="text-gray-500 text-sm">
-                    Tidak ada data ditemukan.
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    Coba sesuaikan pencarian atau filter Anda
-                  </p>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  ), [table, columns]);
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-32 text-center"
+                >
+                  <div className="flex justify-center items-center">
+                    <span className="text-gray-500">Memuat data...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-32 text-center"
+                >
+                  <div className="flex justify-center items-center text-red-500">
+                    {error.message}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="border-gray-100 hover:bg-gray-50/80 transition-colors duration-200"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className="px-4 py-3 text-sm text-gray-600"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-32 text-center"
+                >
+                  <div className="flex flex-col justify-center items-center space-y-2">
+                    <p className="text-gray-500 text-sm">
+                      Tidak ada data ditemukan.
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      Coba sesuaikan pencarian atau filter Anda
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    ),
+    [table, columns, isLoading, error]
+  );
 
   return (
     <div className="space-y-4 w-full">
@@ -243,16 +403,16 @@ export function RuanganTable() {
         <TableSearch
           value={filtering}
           onChange={setFiltering}
-          className="w-full sm:w-72 lg:w-96 transition-all"
+          className="w-full sm:w-72 lg:w-96 transition-all duration-200"
         />
         <DialogForm
           title="Tambah Ruangan"
-          description="Tambahkan ruangan baru ke sistem"
+          description="Tambahkan data ruangan baru ke sistem"
           fields={RUANGAN_FIELDS}
           onSubmit={handleSubmit}
           trigger={
             <Button
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
               aria-label="Tambah Ruangan Baru"
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
@@ -262,14 +422,20 @@ export function RuanganTable() {
         />
       </div>
 
-      <div className="hidden md:block">{renderDesktopTable}</div>
+      <div className="hidden md:block">{renderDesktopTable()}</div>
 
       <div className="md:hidden bg-white shadow rounded-xl overflow-hidden">
-        {table.getRowModel().rows.length ? (
+        {isLoading ? (
+          <div className="p-4 text-center">
+            <span className="text-gray-500">Memuat data...</span>
+          </div>
+        ) : error ? (
+          <div className="p-4 text-center text-red-500">{error.message}</div>
+        ) : table.getRowModel().rows.length ? (
           table.getRowModel().rows.map(renderMobileRow)
         ) : (
-          <div className="p-4 text-center text-gray-500">
-            <p className="text-sm">Tidak ada data ditemukan.</p>
+          <div className="p-4 text-center">
+            <p className="text-sm text-gray-500">Tidak ada data ditemukan.</p>
             <p className="text-sm text-gray-400">
               Coba sesuaikan pencarian atau filter Anda
             </p>
@@ -278,7 +444,7 @@ export function RuanganTable() {
       </div>
 
       <div className="px-4">
-        <TablePagination table={table} />
+        <PaginationControls />
       </div>
     </div>
   );
