@@ -87,9 +87,9 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
         );
 
       default:
-        if (field.type === "datetime-local" && value) {
+        if (field.type === "date" && value) {
           const date = new Date(value);
-          const formattedDate = date.toISOString().slice(0, 16);
+          const formattedDate = date.toISOString().slice(0, 10);
           return (
             <Input
               {...commonProps}
@@ -116,15 +116,18 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
   };
 
   return (
-    <div className="grid grid-cols-4 items-center gap-4">
+    <div className="grid gap-2">
       <Label
         htmlFor={field.id}
-        className="text-right font-medium"
+        className="text-sm font-medium text-gray-700 flex items-center"
       >
         {field.label}
-        {field.required && <span className="text-red-500 ml-1">*</span>}
+        {field.required && <span className="text-red-500 ml-1 text-sm">*</span>}
       </Label>
-      <div className="col-span-3">{renderField()}</div>
+      <div className="relative">
+        {renderField()}
+        <div className="absolute inset-0 pointer-events-none border border-gray-200 rounded-md focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all duration-200" />
+      </div>
     </div>
   );
 }

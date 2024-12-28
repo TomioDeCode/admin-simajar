@@ -8,7 +8,7 @@ export interface FormField {
   | "textarea"
   | "radio"
   | "checkbox"
-  | "datetime-local"
+  | "date"
   | "number"
   | "tel"
   | "password";

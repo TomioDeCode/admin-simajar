@@ -18,25 +18,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TablePagination } from "@/components/fragments/TablePagination";
 import { TableSearch } from "@/components/fragments/TableSearch";
-import { ArrowUpDown, Plus, ChevronDown, CloudCog } from "lucide-react";
+import { ArrowUpDown, Plus, ChevronDown, CloudCog, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { Generation } from "@/types/table";
 import { GENERATION_FIELDS } from "@/constants/field.constants";
 import { createColumns } from "./GenerasiColums";
-import { fetchData } from "@/utils/fetchData";
 import { useCustomQuery } from "@/hooks/useCustomQuery";
 import { toast } from "sonner";
+import { fetchData } from "@/utils/fetchData";
+import { useMutation } from "@tanstack/react-query";
 
 export function GenerasiTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filtering, setFiltering] = useState("");
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const pageSize = 5;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
   const GENERATIONS_ENDPOINT = `${API_URL}/generations`;
@@ -46,7 +46,7 @@ export function GenerasiTable() {
     isLoading,
     error,
     refetch,
-  } = useCustomQuery<{ data: Generation[]; total: number }>({
+  } = useCustomQuery<{ data: Generation[]; total_data: number }>({
     url: `${GENERATIONS_ENDPOINT}?perPage=${pageSize}&page=${pageIndex + 1}`,
     queryKey: ["generations", pageIndex, pageSize],
     fetchConfig: {
@@ -54,37 +54,50 @@ export function GenerasiTable() {
     },
   });
 
+  const { mutateAsync: createGeneration } = useMutation({
+    mutationFn: (data: Partial<Generation>) => 
+      fetchData(GENERATIONS_ENDPOINT, {
+        method: 'POST',
+        requireAuth: true,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+  });
+
+  const { mutateAsync: updateGeneration } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Generation> }) =>
+      fetchData(`${GENERATIONS_ENDPOINT}/${id}`, {
+        method: 'PUT',
+        requireAuth: true,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+  });
+
+  const { mutateAsync: deleteGeneration } = useMutation({
+    mutationFn: (id: string) =>
+      fetchData(`${GENERATIONS_ENDPOINT}/${id}`, {
+        method: 'DELETE',
+        requireAuth: true
+      })
+  });
 
   const data = response?.data?.data || [];
-  const totalItems = response?.data?.total || 0;
+  const totalItems = response?.data?.total_data || 0;
 
-  const formatDateForAPI = (date: string | Date) => {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d.toISOString();
-  };
 
   const handleSubmit = useCallback(
     async (formData: Partial<Generation>) => {
       try {
-        const formattedFormData = {
+        const response = await createGeneration({
           ...formData,
           number: parseInt(String(formData.number)),
           start_date: formData.start_date
             ? new Date(formData.start_date).toISOString().split('T')[0] + 'T00:00:00Z'
-            : null,
+            : undefined,
           end_date: formData.end_date
             ? new Date(formData.end_date).toISOString().split('T')[0] + 'T00:00:00Z'
-            : null,
-        };
-
-        const response = await fetchData<Generation>(GENERATIONS_ENDPOINT, {
-          method: "POST",
-          body: JSON.stringify(formattedFormData),
-          requireAuth: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
+            : undefined
         });
 
         if (response.is_success) {
@@ -98,7 +111,7 @@ export function GenerasiTable() {
         console.error("Error creating generation:", err);
       }
     },
-    [refetch]
+    [createGeneration, refetch]
   );
 
   const handleUpdate = useCallback(
@@ -116,17 +129,10 @@ export function GenerasiTable() {
           is_graduated: Boolean(formData.is_graduated)
         };
 
-        const response = await fetchData<Generation>(
-          `${GENERATIONS_ENDPOINT}/${id}`,
-          {
-            method: "PUT",
-            body: JSON.stringify(formattedFormData),
-            requireAuth: true,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await updateGeneration({
+          id,
+          data: formattedFormData
+        });
 
         if (response.is_success && response.data) {
           toast.success("Berhasil memperbarui generasi");
@@ -139,16 +145,13 @@ export function GenerasiTable() {
         console.error("Error updating generation:", err);
       }
     },
-    [refetch]
+    [updateGeneration, refetch]
   );
 
   const handleDelete = useCallback(
     async (id: string) => {
       try {
-        const response = await fetchData(`${GENERATIONS_ENDPOINT}/${id}`, {
-          method: "DELETE",
-          requireAuth: true,
-        });
+        const response = await deleteGeneration(id);
 
         if (response.is_success) {
           toast.success("Berhasil menghapus generasi");
@@ -161,7 +164,7 @@ export function GenerasiTable() {
         console.error("Error deleting generation:", err);
       }
     },
-    [refetch]
+    [deleteGeneration, refetch]
   );
 
   const columns = useMemo(
@@ -186,22 +189,60 @@ export function GenerasiTable() {
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setFiltering,
-    onPaginationChange: (updater) => {
-      if (typeof updater === "function") {
-        const newState = updater({
-          pageIndex,
-          pageSize,
-        });
-        setPageIndex(newState.pageIndex);
-        setPageSize(newState.pageSize);
-      } else {
-        setPageIndex(updater.pageIndex);
-        setPageSize(updater.pageSize);
-      }
-    },
     manualPagination: true,
     pageCount: Math.ceil(totalItems / pageSize),
   });
+
+  const PaginationControls = () => {
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    return (
+      <div className="flex items-center justify-between px-2 py-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex(0)}
+            disabled={pageIndex === 0}
+            className="hidden sm:inline-flex"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex(prev => Math.max(0, prev - 1))}
+            disabled={pageIndex === 0}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="flex items-center gap-1 text-sm font-medium">
+            Page {pageIndex + 1} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex(prev => Math.min(totalPages - 1, prev + 1))}
+            disabled={pageIndex >= totalPages - 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPageIndex(totalPages - 1)}
+            disabled={pageIndex >= totalPages - 1}
+            className="hidden sm:inline-flex"
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="text-sm text-gray-600">
+          Total {totalItems} items
+        </div>
+      </div>
+    );
+  };
 
   const toggleRowExpansion = useCallback((rowId: string) => {
     setExpandedRows((prev) => ({
@@ -425,7 +466,7 @@ export function GenerasiTable() {
       </div>
 
       <div className="px-4">
-        <TablePagination table={table as any} />
+        <PaginationControls />
       </div>
     </div>
   );

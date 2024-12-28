@@ -6,11 +6,11 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { GuruType, RuanganType, SiswaType } from "@/types/table";
+import { GuruType, RuanganType, SiswaType, Generation } from "@/types/table";
 import { memo } from "react";
 
 interface TablePaginationProps {
-  table: Table<GuruType | RuanganType | SiswaType | any>;
+  table: Table<GuruType | RuanganType | SiswaType | Generation>;
 }
 
 export const TablePagination = memo(function TablePagination({
