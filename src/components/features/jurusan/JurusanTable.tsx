@@ -19,45 +19,44 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TableSearch } from "@/components/fragments/TableSearch";
-import { ArrowUpDown, Plus, ChevronDown, CloudCog, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft } from "lucide-react";
+import { createColumns } from "@/components/features/jurusan/JurusanColums";
+import { JurusanType } from "@/types/table";
+import { ArrowUpDown, Plus, ChevronDown, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft, CloudCog } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
+import { JURUSAN_FIELDS } from "@/constants/field.constants";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
-import { Generation } from "@/types/table";
-import { GENERATION_FIELDS } from "@/constants/field.constants";
-import { createColumns } from "./GenerasiColums";
 import { useCustomQuery } from "@/hooks/useCustomQuery";
 import { toast } from "sonner";
 import { fetchData } from "@/utils/fetchData";
 import { useMutation } from "@tanstack/react-query";
 
-export function GenerasiTable() {
+export function JurusanTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filtering, setFiltering] = useState("");
-  
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 5;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-  const GENERATIONS_ENDPOINT = `${API_URL}/generations`;
+  const JURUSAN_ENDPOINT = `${API_URL}/majors`;
 
   const {
     data: response,
     isLoading,
     error,
     refetch,
-  } = useCustomQuery<{ data: Generation[]; total_data: number }>({
-    url: `${GENERATIONS_ENDPOINT}?perPage=${pageSize}&page=${pageIndex + 1}`,
-    queryKey: ["generations", pageIndex, pageSize],
+  } = useCustomQuery<{ data: JurusanType[]; total_data: number }>({
+    url: `${JURUSAN_ENDPOINT}?perPage=${pageSize}&page=${pageIndex + 1}`,
+    queryKey: ["majors", pageIndex, pageSize],
     fetchConfig: {
       requireAuth: true,
     },
   });
 
-  const { mutateAsync: createGeneration } = useMutation({
-    mutationFn: (data: Partial<Generation>) => 
-      fetchData(GENERATIONS_ENDPOINT, {
+  const { mutateAsync: createJurusan } = useMutation({
+    mutationFn: (data: Partial<JurusanType>) =>
+      fetchData(JURUSAN_ENDPOINT, {
         method: 'POST',
         requireAuth: true,
         headers: { "Content-Type": "application/json" },
@@ -65,9 +64,9 @@ export function GenerasiTable() {
       })
   });
 
-  const { mutateAsync: updateGeneration } = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Generation> }) =>
-      fetchData(`${GENERATIONS_ENDPOINT}/${id}`, {
+  const { mutateAsync: updateJurusan } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<JurusanType> }) =>
+      fetchData(`${JURUSAN_ENDPOINT}/${id}`, {
         method: 'PUT',
         requireAuth: true,
         headers: { "Content-Type": "application/json" },
@@ -75,9 +74,9 @@ export function GenerasiTable() {
       })
   });
 
-  const { mutateAsync: deleteGeneration } = useMutation({
+  const { mutateAsync: deleteJurusan } = useMutation({
     mutationFn: (id: string) =>
-      fetchData(`${GENERATIONS_ENDPOINT}/${id}`, {
+      fetchData(`${JURUSAN_ENDPOINT}/${id}`, {
         method: 'DELETE',
         requireAuth: true
       })
@@ -86,86 +85,64 @@ export function GenerasiTable() {
   const data = response?.data?.data || [];
   const totalItems = response?.data?.total_data || 0;
 
-
   const handleSubmit = useCallback(
-    async (formData: Partial<Generation>) => {
+    async (formData: Partial<JurusanType>) => {
       try {
-        const response = await createGeneration({
-          ...formData,
-          number: parseInt(String(formData.number)),
-          start_date: formData.start_date
-            ? new Date(formData.start_date).toISOString().split('T')[0] + 'T00:00:00Z'
-            : undefined,
-          end_date: formData.end_date
-            ? new Date(formData.end_date).toISOString().split('T')[0] + 'T00:00:00Z'
-            : undefined
-        });
+        const response = await createJurusan(formData);
 
         if (response.is_success) {
-          toast.success("Berhasil menambahkan generasi baru");
+          toast.success("Berhasil menambahkan jurusan baru");
           refetch();
         } else {
-          throw new Error(response.error || "Failed to add generation");
+          throw new Error(response.error || "Failed to add major");
         }
       } catch (err) {
-        toast.error("Gagal menambahkan generasi");
-        console.error("Error creating generation:", err);
+        toast.error("Gagal menambahkan jurusan");
+        console.error("Error creating major:", err);
       }
     },
-    [createGeneration, refetch]
+    [createJurusan, refetch]
   );
 
   const handleUpdate = useCallback(
-    async (id: string, formData: Partial<Generation>) => {
+    async (id: string, formData: Partial<JurusanType>) => {
       try {
-        const formattedFormData = {
-          ...formData,
-          number: parseInt(String(formData.number)),
-          start_date: formData.start_date
-            ? new Date(formData.start_date).toISOString().split('T')[0] + 'T00:00:00Z'
-            : undefined,
-          end_date: formData.end_date
-            ? new Date(formData.end_date).toISOString().split('T')[0] + 'T00:00:00Z'
-            : undefined,
-          is_graduated: Boolean(formData.is_graduated)
-        };
-
-        const response = await updateGeneration({
-          id,
-          data: formattedFormData
+        const response = await updateJurusan({
+          id: id,
+          data: formData
         });
 
-        if (response.is_success && response.data) {
-          toast.success("Berhasil memperbarui generasi");
+        if (response.is_success) {
+          toast.success("Berhasil memperbarui jurusan");
           refetch();
         } else {
-          throw new Error(response.error || "Failed to update generation");
+          throw new Error(response.error || "Failed to update major");
         }
       } catch (err) {
-        toast.error("Gagal memperbarui generasi");
-        console.error("Error updating generation:", err);
+        toast.error("Gagal memperbarui jurusan");
+        console.error("Error updating major:", err);
       }
     },
-    [updateGeneration, refetch]
+    [updateJurusan, refetch]
   );
 
   const handleDelete = useCallback(
     async (id: string) => {
       try {
-        const response = await deleteGeneration(id);
+        const response = await deleteJurusan(id);
 
         if (response.is_success) {
-          toast.success("Berhasil menghapus generasi");
+          toast.success("Berhasil menghapus jurusan");
           refetch();
         } else {
-          throw new Error(response.error || "Failed to delete generation");
+          throw new Error(response.error || "Failed to delete major");
         }
       } catch (err) {
-        toast.error("Gagal menghapus generasi");
-        console.error("Error deleting generation:", err);
+        toast.error("Gagal menghapus jurusan");
+        console.error("Error deleting major:", err);
       }
     },
-    [deleteGeneration, refetch]
+    [deleteJurusan, refetch]
   );
 
   const columns = useMemo(
@@ -272,6 +249,7 @@ export function GenerasiTable() {
           >
             <div className="flex-1">
               <div className="font-medium text-gray-900">{rowData.name}</div>
+              <div className="text-sm text-gray-500">{rowData.abbreviation}</div>
             </div>
             <ChevronDown
               className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""
@@ -281,34 +259,28 @@ export function GenerasiTable() {
           {isExpanded && (
             <div className="px-4 pb-4 space-y-3 bg-gray-50">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Nomor:</span>
+                <span className="text-gray-500">Dibuat:</span>
                 <span className="font-medium text-gray-900">
-                  {rowData.number}
+                  {new Date(rowData.created_at).toLocaleDateString()}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Tanggal Mulai:</span>
+                <span className="text-gray-500">Diperbarui:</span>
                 <span className="font-medium text-gray-900">
-                  {rowData.start_date}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Tanggal Selesai:</span>
-                <span className="font-medium text-gray-900">
-                  {rowData.end_date}
+                  {new Date(rowData.updated_at).toLocaleDateString()}
                 </span>
               </div>
               <div className="flex items-center gap-2 pt-3 border-t">
                 <DialogForm
-                  title="Update Generasi"
-                  description="Edit informasi generasi"
-                  fields={GENERATION_FIELDS}
+                  title="Update Jurusan"
+                  description="Edit informasi jurusan"
+                  fields={JURUSAN_FIELDS}
                   initialData={rowData}
                   isUpdate
                   onSubmit={(newData) => handleUpdate(rowData.id, newData)}
                 />
                 <DeleteDialog
-                  text="Generasi"
+                  text="Jurusan"
                   onConfirm={() => handleDelete(rowData.id)}
                 />
               </div>
@@ -429,17 +401,17 @@ export function GenerasiTable() {
           className="w-full sm:w-72 lg:w-96 transition-all duration-200"
         />
         <DialogForm
-          title="Tambah Generasi"
-          description="Tambahkan data generasi baru ke sistem"
-          fields={GENERATION_FIELDS}
+          title="Tambah Jurusan"
+          description="Tambahkan data jurusan baru ke sistem"
+          fields={JURUSAN_FIELDS}
           onSubmit={handleSubmit}
           trigger={
             <Button
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
-              aria-label="Tambah Generasi Baru"
+              aria-label="Tambah Jurusan Baru"
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
-              Tambah Generasi
+              Tambah Jurusan
             </Button>
           }
         />

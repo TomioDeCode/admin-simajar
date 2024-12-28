@@ -39,6 +39,14 @@ export interface Generation {
   is_graduated: boolean;
 }
 
+export type JurusanType = {
+  id: string;
+  name: string;
+  abbreviation: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SortingState = {
   id: string;
   desc: boolean;

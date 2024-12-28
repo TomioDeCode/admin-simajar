@@ -191,3 +191,20 @@ export const UPDATE_GENERATION_FIELDS: FormField[] = [
     required: true
   }
 ];
+
+export const JURUSAN_FIELDS: FormField[] = [
+  {
+    id: "name",
+    label: "Nama Jurusan",
+    type: "text",
+    placeholder: "Masukkan nama jurusan",
+    required: true,
+  },
+  {
+    id: "abbreviation",
+    label: "Singkatan",
+    type: "text",
+    placeholder: "Masukkan singkatan jurusan",
+    required: true,
+  },
+];
