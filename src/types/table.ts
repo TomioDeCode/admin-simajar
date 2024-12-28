@@ -48,6 +48,16 @@ export type JurusanType = {
   updated_at: string;
 };
 
+export type MapelType = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
+  abbreviation: string;
+  is_vocational_subject: boolean;
+  major_id: string;
+}
+
 export type SortingState = {
   id: string;
   desc: boolean;

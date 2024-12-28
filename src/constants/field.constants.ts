@@ -202,3 +202,43 @@ export const JURUSAN_FIELDS: FormField[] = [
     required: true,
   },
 ];
+
+export const MAPEL_FIELDS: FormField[] = [
+  {
+    id: "name",
+    label: "Nama Mapel",
+    type: "text",
+    placeholder: "Masukkan nama mapel",
+    required: true,
+  },
+  {
+    id: "abbreviation",
+    label: "Singkatan",
+    type: "text",
+    placeholder: "Masukkan singkatan mapel",
+    required: true,
+  },
+  {
+    id: "is_vocational_subject",
+    label: "Mapel Kejuruan",
+    type: "checkbox",
+    required: true
+  },
+  {
+    id: "major_id",
+    label: "Jurusan",
+    type: "select",
+    options: async () => {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+      const { data } = await fetchData(`${API_URL}/majors/list`, {
+        requireAuth: true
+      });
+
+      return (data as Array<{ id: string; name: string }>).map((major) => ({
+        value: major.id,
+        label: major.name
+      }));
+    },
+    required: false
+  }
+];
