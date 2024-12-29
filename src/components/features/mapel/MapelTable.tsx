@@ -107,22 +107,16 @@ export function MapelTable() {
   const handleUpdate = useCallback(
     async (id: string, formData: Partial<MapelType>) => {
       try {
-        console.log('Incoming formData:', formData);
-        
         const updatedData: Partial<MapelType> = {
           ...formData,
           major_id: formData.is_vocational_subject === true ? formData.major_id : null
         };
-  
-        console.log('Processed updatedData:', updatedData);
-  
+
         const response = await updateMapel({
           id,
           data: updatedData
         });
-  
-        console.log('Data sent to API:', updatedData);
-  
+
         if (response.is_success) {
           toast.success("Berhasil memperbarui mata pelajaran");
           refetch();

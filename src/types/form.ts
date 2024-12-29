@@ -18,4 +18,6 @@ export interface FormField {
   rows?: number;
   min?: number;
   max?: number;
+  disabled?: boolean;
+  description?: string;
 }

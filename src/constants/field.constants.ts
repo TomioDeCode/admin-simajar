@@ -135,7 +135,7 @@ export const RUANGAN_FIELDS: FormField[] = [
         label: major.name
       }));
 
-      return [{ value: false, label: "Pilih Jurusan" }, ...majors];
+      return [...majors];
     },
     required: false,
   }
@@ -243,7 +243,7 @@ export const MAPEL_FIELDS: FormField[] = [
         label: major.name
       }));
 
-      return [{ value: null, label: "Pilih Jurusan" }, ...majors];
+      return [...majors];
     },
     required: false
   }

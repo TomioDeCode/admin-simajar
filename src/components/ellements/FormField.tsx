@@ -13,37 +13,55 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField } from "@/types/form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+
+interface Option {
+  value: string | boolean | null;
+  label: string;
+}
 
 interface FormFieldProps {
   field: FormField;
   value: any;
   onChange: (value: any) => void;
+  className?: string;
 }
 
-export function FormFields({ field, value, onChange }: FormFieldProps) {
-  const [radioOptions, setRadioOptions] = useState<{value: string, label: string}[]>([]);
-  const [selectOptions, setSelectOptions] = useState<{value: string, label: string}[]>([]);
+export function FormFields({ field, value, onChange, className = "" }: FormFieldProps) {
+  const [options, setOptions] = useState<Option[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadOptions = useCallback(async () => {
+    if (!field.options) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const loadedOptions = typeof field.options === 'function'
+        ? await field.options()
+        : field.options;
+      setOptions(loadedOptions as Option[]);
+    } catch (err) {
+      setError('Failed to load options');
+      console.error('Error loading options:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [field.options]);
 
   useEffect(() => {
-    const loadOptions = async () => {
-      if (field.options) {
-        const options = typeof field.options === 'function' ? await field.options() : field.options;
-        if (field.type === 'radio') {
-          setRadioOptions(options);
-        } else if (field.type === 'select') {
-          setSelectOptions(options);
-        }
-      }
-    };
     loadOptions();
-  }, [field.options, field.type]);
+  }, [loadOptions]);
 
   const renderRadioOptions = () => {
-    return radioOptions.map((option) => (
-      <div key={option.value} className="flex items-center space-x-2">
+    if (isLoading) return <div className="text-sm text-gray-500">Loading options...</div>;
+    if (error) return <div className="text-sm text-red-500">{error}</div>;
+
+    return options.map((option) => (
+      <div key={String(option.value)} className="flex items-center space-x-2">
         <RadioGroupItem
-          value={option.value}
+          value={String(option.value)}
           id={`${field.id}-${option.value}`}
         />
         <Label htmlFor={`${field.id}-${option.value}`}>
@@ -54,24 +72,51 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
   };
 
   const renderSelectOptions = () => {
-    return selectOptions.map((option) => (
-      <SelectItem key={option.value} value={option.value}>
-        {option.label}
-      </SelectItem>
-    ));
+    if (isLoading) {
+      return (
+        <SelectItem value="loading" disabled>
+          Loading options...
+        </SelectItem>
+      );
+    }
+
+    if (error) {
+      return (
+        <SelectItem value="error" disabled>
+          {error}
+        </SelectItem>
+      );
+    }
+
+    return options.map((option) => {
+      const optionValue = String(option.value || 'undefined');
+      return (
+        <SelectItem key={optionValue} value={optionValue}>
+          {option.label}
+        </SelectItem>
+      );
+    });
   };
 
   const renderField = () => {
     const commonProps = {
       id: field.id,
-      value,
+      value: value ?? '',
       placeholder: field.placeholder,
+      disabled: field.disabled,
+      "aria-required": field.required,
+      "aria-label": field.label,
     };
 
     switch (field.type) {
       case "select":
+        const selectValue = String(value ?? 'undefined');
         return (
-          <Select value={value} onValueChange={onChange}>
+          <Select
+            value={selectValue}
+            onValueChange={onChange}
+            disabled={field.disabled || isLoading}
+          >
             <SelectTrigger>
               <SelectValue placeholder={field.placeholder} />
             </SelectTrigger>
@@ -92,7 +137,11 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
 
       case "radio":
         return (
-          <RadioGroup value={value} onValueChange={onChange}>
+          <RadioGroup
+            value={String(value ?? '')}
+            onValueChange={onChange}
+            disabled={field.disabled || isLoading}
+          >
             {renderRadioOptions()}
           </RadioGroup>
         );
@@ -101,8 +150,10 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
         return (
           <Checkbox
             id={field.id}
-            checked={value}
+            checked={!!value}
             onCheckedChange={onChange}
+            disabled={field.disabled}
+            aria-label={field.label}
           />
         );
 
@@ -113,10 +164,9 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
           return (
             <Input
               {...commonProps}
-              type={field.type}
+              type="date"
               value={formattedDate}
               onChange={(e) => onChange(e.target.value)}
-              required={field.required}
               min={field.min}
               max={field.max}
             />
@@ -125,9 +175,8 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
         return (
           <Input
             {...commonProps}
-            type={field.type}
+            type={field.type || "text"}
             onChange={(e) => onChange(e.target.value)}
-            required={field.required}
             min={field.min}
             max={field.max}
           />
@@ -136,7 +185,7 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
   };
 
   return (
-    <div className="grid gap-2">
+    <div className={`grid gap-2 ${className}`}>
       <Label
         htmlFor={field.id}
         className="text-sm font-medium text-gray-700 flex items-center"
@@ -146,7 +195,9 @@ export function FormFields({ field, value, onChange }: FormFieldProps) {
       </Label>
       <div className="relative">
         {renderField()}
-        <div className="absolute inset-0 pointer-events-none border border-gray-200 rounded-md focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all duration-200" />
+        {field.description && (
+          <p className="mt-1 text-sm text-gray-500">{field.description}</p>
+        )}
       </div>
     </div>
   );
