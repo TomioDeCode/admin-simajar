@@ -124,15 +124,18 @@ export const RUANGAN_FIELDS: FormField[] = [
     id: "major_id",
     label: "Jurusan",
     type: "select",
+    placeholder: "Pilih Jurusan",
     options: async () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
       const { data } = await fetchData(`${API_URL}/majors/list`, {
         requireAuth: true
       });
-      return (data as Array<{ id: string; name: string }>).map((major) => ({
+      const majors = (data as Array<{ id: string; name: string }>).map((major) => ({
         value: major.id,
         label: major.name
       }));
+
+      return [{ value: false, label: "Pilih Jurusan" }, ...majors];
     },
     required: false,
   }
@@ -228,16 +231,19 @@ export const MAPEL_FIELDS: FormField[] = [
     id: "major_id",
     label: "Jurusan",
     type: "select",
+    placeholder: "Pilih Jurusan",
     options: async () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
       const { data } = await fetchData(`${API_URL}/majors/list`, {
         requireAuth: true
       });
 
-      return (data as Array<{ id: string; name: string }>).map((major) => ({
+      const majors = (data as Array<{ id: string; name: string }>).map((major) => ({
         value: major.id,
         label: major.name
       }));
+
+      return [{ value: null, label: "Pilih Jurusan" }, ...majors];
     },
     required: false
   }

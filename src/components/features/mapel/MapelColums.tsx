@@ -12,7 +12,7 @@ type MapelType = {
   name: string;
   abbreviation: string;
   is_vocational_subject: boolean;
-  major_id: string;
+  major_id: string | null | undefined;
 }
 
 export const MapelColumns = (
