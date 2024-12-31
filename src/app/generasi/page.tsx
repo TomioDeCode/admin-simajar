@@ -1,6 +1,6 @@
 import React from "react";
 import { MainCard } from "@/components/core/MainCard";
-import { GenerasiTable } from "@/components/features/generasi/GenerasiTable";
+import { AngkatanTable } from "@/components/features/generasi/GenerasiTable";
 
 const GenerasiPage = () => {
   const generasiStats = [
@@ -23,7 +23,7 @@ const GenerasiPage = () => {
         ))}
       </div>
       <div className="w-full overflow-x-auto rounded-lg shadow-sm border border-gray-100">
-        <GenerasiTable />
+        <AngkatanTable />
       </div>
     </main>
   );

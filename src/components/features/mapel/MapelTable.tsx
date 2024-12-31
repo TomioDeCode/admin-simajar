@@ -264,12 +264,12 @@ export function MapelTable() {
           {isExpanded && (
             <div className="px-4 pb-4 space-y-3 bg-gray-50">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Jam:</span>
-                <span className="font-medium text-gray-900">{rowData.hours}</span>
+                <span className="text-gray-500">Singkatan:</span>
+                <span className="font-medium text-gray-900">{rowData.abbreviation}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-gray-500">Status:</span>
-                <span className="font-medium text-gray-900">{rowData.status}</span>
+                <span className="font-medium text-gray-900">{rowData.major_id ? "Jurusan" : "Umum"}</span>
               </div>
               <div className="flex items-center gap-2 pt-3 border-t">
                 <DialogForm

@@ -30,6 +30,7 @@ import { useCustomQuery } from "@/hooks/useCustomQuery";
 import { toast } from "sonner";
 import { fetchData } from "@/utils/fetchData";
 import { useMutation } from "@tanstack/react-query";
+import { convertIsoDatetimeToFormattedDate } from "@/utils/dateTimeToDate";
 
 export function RuanganTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -99,7 +100,7 @@ export function RuanganTable() {
           toast.success("Berhasil menambahkan ruangan baru");
           refetch();
         } else {
-          throw new Error(response.error || "Failed to add room");
+          throw new Error(response.error || "Gagal menambahkan ruangan");
         }
       } catch (err) {
         toast.error("Gagal menambahkan ruangan");
@@ -126,7 +127,7 @@ export function RuanganTable() {
           toast.success("Berhasil memperbarui ruangan");
           refetch();
         } else {
-          throw new Error(response.error || "Failed to update room");
+          throw new Error(response.error || "Gagal memperbarui ruangan");
         }
       } catch (err) {
         toast.error("Gagal memperbarui ruangan");
@@ -145,7 +146,7 @@ export function RuanganTable() {
           toast.success("Berhasil menghapus ruangan");
           refetch();
         } else {
-          throw new Error(response.error || "Failed to delete room");
+          throw new Error(response.error || "Gagal menghapus ruangan");
         }
       } catch (err) {
         toast.error("Gagal menghapus ruangan");
@@ -205,7 +206,7 @@ export function RuanganTable() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="flex items-center gap-1 text-sm font-medium">
-            Page {pageIndex + 1} of {totalPages}
+            Halaman {pageIndex + 1} dari {totalPages}
           </span>
           <Button
             variant="outline"
@@ -226,7 +227,7 @@ export function RuanganTable() {
           </Button>
         </div>
         <div className="text-sm text-gray-600">
-          Total {totalItems} items
+          Total {totalItems} item
         </div>
       </div>
     );
@@ -258,8 +259,7 @@ export function RuanganTable() {
             }}
           >
             <div className="flex-1">
-              <div className="font-medium text-gray-900">{rowData.number}</div>
-              <div className="text-sm text-gray-500">{rowData.name}</div>
+              <div className="font-medium text-gray-900">Ruang {rowData.number}</div>
             </div>
             <ChevronDown
               className={`w-5 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
@@ -268,16 +268,16 @@ export function RuanganTable() {
           {isExpanded && (
             <div className="px-4 pb-4 space-y-3 bg-gray-50">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Kapasitas:</span>
-                <span className="font-medium text-gray-900">{rowData.capacity}</span>
+                <span className="text-gray-500">Ruangan:</span>
+                <span className="font-medium text-gray-900">{rowData.is_practice_room ? "Praktek" : "Umum"}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Status:</span>
-                <span className="font-medium text-gray-900">{rowData.status}</span>
+                <span className="text-gray-500">Dibuat :</span>
+                <span className="font-medium text-gray-900">{new Date(rowData.created_at).toLocaleDateString()}</span>
               </div>
               <div className="flex items-center gap-2 pt-3 border-t">
                 <DialogForm
-                  title="Update Ruangan"
+                  title="Perbarui Ruangan"
                   description="Edit informasi ruangan"
                   fields={RUANGAN_FIELDS}
                   initialData={rowData}
