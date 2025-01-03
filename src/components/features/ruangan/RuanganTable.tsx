@@ -30,7 +30,6 @@ import { useCustomQuery } from "@/hooks/useCustomQuery";
 import { toast } from "sonner";
 import { fetchData } from "@/utils/fetchData";
 import { useMutation } from "@tanstack/react-query";
-import { convertIsoDatetimeToFormattedDate } from "@/utils/dateTimeToDate";
 
 export function RuanganTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -93,6 +92,8 @@ export function RuanganTable() {
           ...formData,
           number: formData.number ? Number(formData.number) : undefined
         };
+
+        console.log(transformedData)
 
         const response = await createRuangan(transformedData);
 
