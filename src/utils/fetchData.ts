@@ -1,5 +1,5 @@
 import { ApiResponse, FetchConfig } from "@/types/api";
-import { FETCH_CONSTANTS } from "@/constants/fetch.constants";
+import { FETCH_CONSTANTS } from "@/constants/fetch";
 import { FetchError } from "@/utils/errors";
 import { delay, createHeaders } from "@/utils/helpers";
 import { getToken } from "./serverAuth";

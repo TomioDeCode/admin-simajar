@@ -4,7 +4,7 @@ import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { DialogForm } from "@/components/common/DialogForm";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GURU_FIELDS } from "@/constants/field.constants";
+import { GURU_FIELDS } from "@/constants/field";
 
 export const createColumns = (
   data: GuruType[],

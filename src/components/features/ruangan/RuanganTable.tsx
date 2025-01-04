@@ -23,7 +23,7 @@ import { RuanganColumns } from "./RuanganColums";
 import { RuanganType } from "@/types/table";
 import { ArrowUpDown, Plus, ChevronDown, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
-import { RUANGAN_FIELDS } from "@/constants/field.constants";
+import { RUANGAN_FIELDS } from "@/constants/field";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { useCustomQuery } from "@/hooks/useCustomQuery";

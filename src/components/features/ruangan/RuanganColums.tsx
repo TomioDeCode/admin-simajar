@@ -4,7 +4,7 @@ import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { DialogForm } from "@/components/common/DialogForm";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RUANGAN_FIELDS } from "@/constants/field.constants";
+import { RUANGAN_FIELDS } from "@/constants/field";
 
 export const RuanganColumns = (
   data: RuanganType[],

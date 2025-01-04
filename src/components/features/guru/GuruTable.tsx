@@ -24,7 +24,7 @@ import { createColumns } from "@/components/features/guru/GuruColums";
 import { GuruType } from "@/types/table";
 import { ArrowUpDown, Plus, ChevronDown } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
-import { GURU_FIELDS } from "@/constants/field.constants";
+import { GURU_FIELDS } from "@/constants/field";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TbGenderDemiboy, TbGenderDemigirl } from "react-icons/tb";

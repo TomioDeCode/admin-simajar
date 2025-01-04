@@ -4,7 +4,7 @@ import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { DialogForm } from "@/components/common/DialogForm";
 import { ArrowUpDown, CloudCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GENERATION_FIELDS, UPDATE_GENERATION_FIELDS } from "@/constants/field.constants";
+import { GENERATION_FIELDS, UPDATE_GENERATION_FIELDS } from "@/constants/field";
 
 export const createColumns = (
   data: Generation[],

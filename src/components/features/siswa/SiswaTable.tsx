@@ -25,7 +25,7 @@ import { SiswaColumns } from "@/components/features/siswa/SiswaColumns";
 import { SiswaType } from "@/types/table";
 import { ArrowUpDown, Plus, ChevronDown } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
-import { SISWA_FIELDS } from "@/constants/field.constants";
+import { SISWA_FIELDS } from "@/constants/field";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TbGenderDemiboy, TbGenderDemigirl } from "react-icons/tb";

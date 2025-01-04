@@ -4,7 +4,7 @@ import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { DialogForm } from "@/components/common/DialogForm";
 import { ArrowUpDown, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SISWA_FIELDS } from "@/constants/field.constants";
+import { SISWA_FIELDS } from "@/constants/field";
 import { TbGenderDemiboy, TbGenderDemigirl } from "react-icons/tb";
 import { Badge } from "@/components/ui/badge";
 

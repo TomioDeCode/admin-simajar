@@ -24,7 +24,7 @@ import { DialogForm } from "@/components/common/DialogForm";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { Generation } from "@/types/table";
-import { GENERATION_FIELDS } from "@/constants/field.constants";
+import { GENERATION_FIELDS } from "@/constants/field";
 import { createColumns } from "./GenerasiColums";
 import { useCustomQuery } from "@/hooks/useCustomQuery";
 import { toast } from "sonner";

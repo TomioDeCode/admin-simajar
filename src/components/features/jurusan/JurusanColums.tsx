@@ -4,7 +4,7 @@ import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { DialogForm } from "@/components/common/DialogForm";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { JURUSAN_FIELDS } from "@/constants/field.constants";
+import { JURUSAN_FIELDS } from "@/constants/field";
 
 export const createColumns = (
   data: JurusanType[],

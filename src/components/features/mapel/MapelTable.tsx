@@ -23,7 +23,7 @@ import { MapelColumns } from "@/components/features/mapel/MapelColums";
 import { MapelType } from "@/types/table";
 import { ArrowUpDown, Plus, ChevronDown, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
-import { MAPEL_FIELDS } from "@/constants/field.constants";
+import { MAPEL_FIELDS } from "@/constants/field";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { useCustomQuery } from "@/hooks/useCustomQuery";

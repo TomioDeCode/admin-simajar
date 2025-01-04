@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/constants/api.constants";
+import { API_BASE_URL } from "@/constants/api";
 
 /**
  * Builds a complete API URL by combining the base URL with an endpoint

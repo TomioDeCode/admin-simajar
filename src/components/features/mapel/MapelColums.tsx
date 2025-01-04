@@ -3,7 +3,7 @@ import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { DialogForm } from "@/components/common/DialogForm";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MAPEL_FIELDS } from "@/constants/field.constants";
+import { MAPEL_FIELDS } from "@/constants/field";
 
 type MapelType = {
   id: string;

@@ -1,4 +1,4 @@
-import { FETCH_CONSTANTS } from "@/constants/fetch.constants";
+import { FETCH_CONSTANTS } from "@/constants/fetch";
 import { FetchError } from "./errors";
 import { getToken } from "./serverAuth";
 

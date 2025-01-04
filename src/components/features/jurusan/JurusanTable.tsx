@@ -23,7 +23,7 @@ import { createColumns } from "@/components/features/jurusan/JurusanColums";
 import { JurusanType } from "@/types/table";
 import { ArrowUpDown, Plus, ChevronDown, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft, CloudCog } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
-import { JURUSAN_FIELDS } from "@/constants/field.constants";
+import { JURUSAN_FIELDS } from "@/constants/field";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/common/DeleteDialog";
 import { useCustomQuery } from "@/hooks/useCustomQuery";
