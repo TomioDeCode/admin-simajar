@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { fetchData } from "@/utils/fetchData";
 import { useRouter } from "next/navigation";
-import { clientAuth } from "@/utils/clientAuth.ts";
+import { clientAuth } from "@/utils/clientAuth";
 
 interface LoginResponse {
   token: string;
@@ -63,8 +63,6 @@ export function LoginForm({
           "Content-Type": "application/json",
         },
       });
-
-      console.log(response.data);
 
       if (!response.is_success) {
         setError(response.error || "Login gagal. Silakan coba lagi.");

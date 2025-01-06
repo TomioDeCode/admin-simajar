@@ -3,7 +3,9 @@
 export const clientAuth = {
   setToken: (token: string) => {
     const maxAge = 30 * 24 * 60 * 60;
-    document.cookie = `token=${token}; path=/; secure; samesite=strict; max-age=${maxAge}`;
+    const isSecure = window.location.protocol === 'https:';
+    const secureFlag = isSecure ? 'secure;' : '';
+    document.cookie = `token=${encodeURIComponent(token)}; path=/; ${secureFlag} samesite=strict; max-age=${maxAge}`;
   },
 
   removeToken: () => {
