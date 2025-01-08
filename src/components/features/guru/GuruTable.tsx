@@ -18,8 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TablePagination } from "@/components/fragments/TablePagination";
-import { TableSearch } from "@/components/fragments/TableSearch";
+import { TablePagination } from "@/fragments/TablePagination";
+import { TableSearch } from "@/fragments/TableSearch";
 import { createColumns } from "@/components/features/guru/GuruColums";
 import { GuruType } from "@/types/table";
 import { ArrowUpDown, Plus, ChevronDown } from "lucide-react";

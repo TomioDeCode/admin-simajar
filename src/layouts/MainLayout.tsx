@@ -1,7 +1,7 @@
 import React, { memo } from "react";
-import { SidebarInset, SidebarProvider } from "../ui/sidebar";
-import { AppSidebar } from "../core/Sidebar";
-import BreadcrumbItems from "../common/BreadcrumbHeader";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/core/Sidebar"
+import BreadcrumbItems from "@/components/common/BreadcrumbHeader";
 
 interface MainLayoutProps {
   children: React.ReactNode;

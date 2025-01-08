@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { fetchData } from "@/utils/fetchData";
 import { useRouter } from "next/navigation";
-import { clientAuth } from "@/utils/clientAuth";
+import { setServerToken } from "@/utils/cookie";
 
 interface LoginResponse {
   token: string;
@@ -70,7 +70,7 @@ export function LoginForm({
       }
 
       if (response.data?.token) {
-        clientAuth.setToken(response.data.token);
+        setServerToken(response.data.token);
         router.push("/dashboard");
       } else {
         setError("Respon server tidak valid");
@@ -86,7 +86,9 @@ export function LoginForm({
   return (
     <Card className={cn("w-full", className)} {...props}>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-semibold">Selamat Datang Kembali</CardTitle>
+        <CardTitle className="text-2xl font-semibold">
+          Selamat Datang Kembali
+        </CardTitle>
         <CardDescription>
           Masukkan email Anda untuk login ke akun Anda
         </CardDescription>

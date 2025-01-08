@@ -2,11 +2,8 @@ import { ApiResponse, FetchConfig } from "@/types/api";
 import { FETCH_CONSTANTS } from "@/constants/fetch";
 import { FetchError } from "@/utils/errors";
 import { delay, createHeaders } from "@/utils/helpers";
-import { getToken } from "./serverAuth";
+import { getToken } from "./cookie";
 
-/**
- * Performs a fetch request with retry capability and timeout handling
- */
 async function fetchWithRetry(
   url: string,
   config: FetchConfig,
@@ -68,9 +65,6 @@ async function fetchWithRetry(
   }
 }
 
-/**
- * Parses the API response into a standardized format
- */
 async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
   const responseData = await response.json().catch(() => ({}));
 
@@ -84,9 +78,6 @@ async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
   };
 }
 
-/**
- * Handles various error types and returns a standardized error response
- */
 function handleError(error: unknown): ApiResponse<never> {
   if (error instanceof FetchError) {
     return {
@@ -112,9 +103,6 @@ function handleError(error: unknown): ApiResponse<never> {
   };
 }
 
-/**
- * Main fetch function that handles authentication and error handling
- */
 export async function fetchData<T>(
   url: string,
   config: FetchConfig = {}

@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TableSearch } from "@/components/fragments/TableSearch";
+import { TableSearch } from "@/fragments/TableSearch";
 import { ArrowUpDown, Plus, ChevronDown, CloudCog, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft } from "lucide-react";
 import { DialogForm } from "@/components/common/DialogForm";
 import { Button } from "@/components/ui/button";

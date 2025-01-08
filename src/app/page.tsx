@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import LoginLayout from "@/components/layouts/LoginLayout";
+import LoginLayout from "@/layouts/LoginLayout";
 
 export const metadata: Metadata = {
   title: "Login - Sistem Informasi Sekolah",

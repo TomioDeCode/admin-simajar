@@ -19,8 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TablePagination } from "@/components/fragments/TablePagination";
-import { TableSearch } from "@/components/fragments/TableSearch";
+import { TablePagination } from "@/fragments/TablePagination";
+import { TableSearch } from "@/fragments/TableSearch";
 import { SiswaColumns } from "@/components/features/siswa/SiswaColumns";
 import { SiswaType } from "@/types/table";
 import { ArrowUpDown, Plus, ChevronDown } from "lucide-react";

@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TableSearch } from "@/components/fragments/TableSearch";
+import { TableSearch } from "@/fragments/TableSearch";
 import { RuanganColumns } from "./RuanganColums";
 import { RuanganType } from "@/types/table";
 import { ArrowUpDown, Plus, ChevronDown, ChevronsRight, ChevronRight, ChevronLeft, ChevronsLeft } from "lucide-react";

@@ -4,9 +4,9 @@ import * as React from "react";
 import { GalleryVerticalEnd } from "lucide-react";
 import { PiDoor, PiGraduationCap, PiStudent } from "react-icons/pi";
 
-import { NavMain } from "@/components/fragments/NavMain";
-import { NavUser } from "@/components/fragments/NavUser";
-import { NavLogo } from "@/components/fragments/NavLogo";
+import { NavMain } from "@/fragments/NavMain";
+import { NavUser } from "@/fragments/NavUser";
+import { NavLogo } from "@/fragments/NavLogo";
 import {
   Sidebar,
   SidebarContent,
