@@ -4,8 +4,6 @@ export type SiswaType = {
   email: string;
   role: "admin" | "student" | "teacher";
   status: "active" | "inactive";
-  createdAt?: Date;
-  updatedAt?: Date;
   class?: string;
   studentId?: string;
   phoneNumber?: string;
@@ -24,7 +22,7 @@ export type GuruType = {
 export type RuanganType = {
   id: string;
   created_at: string;
-  updated_at: string; 
+  updated_at: string;
   number: number;
   is_practice_room: boolean;
   major_id: string | null;
@@ -56,7 +54,7 @@ export type MapelType = {
   abbreviation: string;
   is_vocational_subject: boolean;
   major_id: string | null | undefined;
-}
+};
 
 export type SortingState = {
   id: string;
