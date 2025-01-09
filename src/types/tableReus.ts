@@ -11,7 +11,7 @@ export interface SelectOption {
 export interface ColumnConfig {
   header: string;
   accessor: string;
-  type?: "text" | "email" | "select" | "number" | "date";
+  type?: "text" | "number" | "date" | "select" | "switch";
   optionsUrl?: string;
   validation?: {
     required?: boolean;

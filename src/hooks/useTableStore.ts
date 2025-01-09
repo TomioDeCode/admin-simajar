@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { fetchData } from "@/utils/fetchData";
-import { ApiResponse, FetchConfig } from "@/types/api";
+import { FetchConfig } from "@/types/api";
 
 interface PaginationParams {
   page: number;
@@ -9,16 +9,21 @@ interface PaginationParams {
 }
 
 interface TableState<T> {
-  data: T[];
+  data: {
+    data: T[];
+    total_data: number;
+    current_page: number;
+    per_page: number;
+  };
   filteredData: T[];
-  pageData: T[];
+  pageData: number;
+  isLoading: boolean;
+  error: string | null;
   meta: {
     currentPage: number;
     perPage: number;
     total_data: number;
   } | null;
-  isLoading: boolean;
-  error: string | null;
   fetchData: (endpoint: string, params: PaginationParams) => Promise<void>;
   addItem: (endpoint: string, item: Partial<T>) => Promise<void>;
   updateItem: (endpoint: string, item: T) => Promise<void>;
@@ -28,12 +33,17 @@ interface TableState<T> {
 
 export const createTableStore = <T extends { id: string }>() => {
   return create<TableState<T>>((set, get) => ({
-    data: [],
+    data: {
+      data: [],
+      total_data: 0,
+      current_page: 1,
+      per_page: 10,
+    },
+    pageData: 0,
     filteredData: [],
-    pageData: [],
-    meta: null,
     isLoading: false,
     error: null,
+    meta: null,
 
     fetchData: async (endpoint: string, params: PaginationParams) => {
       set({ isLoading: true, error: null });
@@ -48,32 +58,35 @@ export const createTableStore = <T extends { id: string }>() => {
           requireAuth: true,
         };
 
-        const result = await fetchData<T[]>(
-          `${endpoint}?${queryParams}`,
-          config
-        );
+        const result = await fetchData<{
+          data: T[];
+          total_data: number;
+          current_page: number;
+          per_page: number;
+        }>(`${endpoint}?${queryParams}`, config);
+
+        if (!result.data || !result.is_success) {
+          throw new Error(result.error || "Failed to fetch data");
+        }
 
         const dataPage = result.data.total_data;
 
-        if (!result.is_success) {
-          throw new Error(result.message || "Failed to fetch data");
-        }
-
-        const newData = result.data.data || [];
+        const newData = {
+          data: result.data.data || [],
+          total_data: result.data.total_data || 0,
+          current_page: result.data.current_page || 1,
+          per_page: result.data.per_page || 10,
+        };
 
         set({
           data: newData,
-          pageData: dataPage,
-          filteredData: newData,
-          meta: result.data
-            ? {
-                currentPage: params.page,
-                perPage: params.perPage,
-                total_data: Array.isArray(result.data)
-                  ? result.data.total_data
-                  : 0,
-              }
-            : null,
+          filteredData: newData.data,
+          pageData: dataPage ?? 0,
+          meta: {
+            currentPage: params.page,
+            perPage: params.perPage,
+            total_data: newData.total_data,
+          },
           isLoading: false,
         });
       } catch (error) {
@@ -88,12 +101,12 @@ export const createTableStore = <T extends { id: string }>() => {
     setSearch: (search: string, searchFields: (keyof T)[]) => {
       const { data } = get();
       if (!search.trim()) {
-        set({ filteredData: data });
+        set({ filteredData: data.data });
         return;
       }
 
       const searchLower = search.toLowerCase();
-      const filtered = data.filter((item) => {
+      const filtered = data.data.filter((item) => {
         return searchFields.some((field) => {
           const value = item[field];
           if (typeof value === "string") {
@@ -106,26 +119,41 @@ export const createTableStore = <T extends { id: string }>() => {
         });
       });
 
-      set({
-        filteredData: filtered,
-        meta: get().meta
-          ? {
-              ...get().meta,
-              total_data: filtered.length,
-            }
-          : null,
-      });
+      set({ filteredData: filtered });
     },
 
     addItem: async (endpoint: string, item: Partial<T>) => {
       try {
+        const formattedItem = {
+          ...item,
+          ...("number" in item && {
+            number:
+              typeof item.number === "string"
+                ? parseInt(item.number)
+                : item.number,
+          }),
+          ...("start_date" in item && {
+            start_date: item.start_date
+              ? new Date(item.start_date as string)
+                  .toISOString()
+                  .split("T")[0] + "T00:00:00Z"
+              : undefined,
+          }),
+          ...("end_date" in item && {
+            end_date: item.end_date
+              ? new Date(item.end_date as string).toISOString().split("T")[0] +
+                "T00:00:00Z"
+              : undefined,
+          }),
+        };
+
         const config: FetchConfig = {
           method: "POST",
           requireAuth: true,
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(item),
+          body: JSON.stringify(formattedItem),
         };
 
         const result = await fetchData<T>(endpoint, config);
@@ -142,19 +170,44 @@ export const createTableStore = <T extends { id: string }>() => {
           });
         }
       } catch (error) {
-        throw new Error("Failed to add item");
+        throw new Error(
+          error instanceof Error ? error.message : "Failed to add item"
+        );
       }
     },
 
     updateItem: async (endpoint: string, item: T) => {
       try {
+        const formattedItem = {
+          ...item,
+          ...("number" in item && {
+            number:
+              typeof item.number === "string"
+                ? parseInt(item.number)
+                : item.number,
+          }),
+          ...("start_date" in item && {
+            start_date: item.start_date
+              ? new Date(item.start_date as string)
+                  .toISOString()
+                  .split("T")[0] + "T00:00:00Z"
+              : undefined,
+          }),
+          ...("end_date" in item && {
+            end_date: item.end_date
+              ? new Date(item.end_date as string).toISOString().split("T")[0] +
+                "T00:00:00Z"
+              : undefined,
+          }),
+        };
+
         const config: FetchConfig = {
           method: "PUT",
           requireAuth: true,
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(item),
+          body: JSON.stringify(formattedItem),
         };
 
         const result = await fetchData<T>(`${endpoint}/${item.id}`, config);
@@ -171,7 +224,9 @@ export const createTableStore = <T extends { id: string }>() => {
           });
         }
       } catch (error) {
-        throw new Error("Failed to update item");
+        throw new Error(
+          error instanceof Error ? error.message : "Failed to update item"
+        );
       }
     },
 
@@ -196,10 +251,12 @@ export const createTableStore = <T extends { id: string }>() => {
           });
         }
       } catch (error) {
-        throw new Error("Failed to delete item");
+        throw new Error(
+          error instanceof Error ? error.message : "Failed to delete item"
+        );
       }
     },
   }));
 };
 
-export const createJurusanStore = () => createTableStore();
+export const createJurusanStore = createTableStore;

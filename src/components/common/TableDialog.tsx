@@ -4,7 +4,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -19,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -34,7 +34,7 @@ interface TableDialogProps<T> {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: Partial<T>) => void;
-  onDelete?: () => void;
+  onDelete?: (data: T) => void;
   columns: ColumnConfig[];
   initialData?: T | null;
   isSubmitting?: boolean;
@@ -55,7 +55,17 @@ export function TableDialog<T extends TableData>({
 
   useEffect(() => {
     if (open) {
-      setFormData(initialData || {});
+      const processedData = { ...initialData };
+      columns.forEach((column) => {
+        if (column.type === "switch") {
+          processedData[column.accessor] =
+            typeof initialData?.[column.accessor] === "string"
+              ? initialData[column.accessor] === "true"
+              : Boolean(initialData?.[column.accessor]);
+        }
+      });
+      setFormData(processedData as Partial<T>);
+
       columns.forEach((column) => {
         if (column.type === "select" && column.optionsUrl) {
           fetchOptions(column.accessor, column.optionsUrl);
@@ -71,15 +81,35 @@ export function TableDialog<T extends TableData>({
 
   const handleDelete = () => {
     if (onDelete) {
-      onDelete();
+      onDelete(formData as T);
       setShowDeleteDialog(false);
     }
   };
 
   const renderField = (column: ColumnConfig) => {
-    const value = formData[column.accessor as keyof T] || "";
+    const value = formData[column.accessor as keyof T];
 
     switch (column.type) {
+      case "switch":
+        return (
+          <div className="flex items-center justify-between space-x-2">
+            <Label htmlFor={column.accessor} className="text-sm">
+              {column.header}
+            </Label>
+            <Switch
+              id={column.accessor}
+              checked={Boolean(value)}
+              onCheckedChange={(checked) => {
+                console.log(`Switching ${column.accessor} to:`, checked); // Debug log
+                setFormData((prev) => ({
+                  ...prev,
+                  [column.accessor]: checked,
+                }));
+              }}
+              disabled={isSubmitting}
+            />
+          </div>
+        );
       case "select":
         return (
           <Select
@@ -105,7 +135,7 @@ export function TableDialog<T extends TableData>({
         return (
           <Input
             type="date"
-            value={value}
+            value={String(value)}
             onChange={(e) =>
               setFormData({ ...formData, [column.accessor]: e.target.value })
             }
@@ -117,7 +147,7 @@ export function TableDialog<T extends TableData>({
         return (
           <Input
             type={column.type}
-            value={value}
+            value={String(value)}
             onChange={(e) =>
               setFormData({ ...formData, [column.accessor]: e.target.value })
             }
@@ -141,7 +171,9 @@ export function TableDialog<T extends TableData>({
           <form onSubmit={handleSubmit} className="space-y-4">
             {columns.map((column) => (
               <div key={column.accessor} className="space-y-2">
-                <Label htmlFor={column.accessor}>{column.header}</Label>
+                {column.type !== "switch" && (
+                  <Label htmlFor={column.accessor}>{column.header}</Label>
+                )}
                 {renderField(column)}
               </div>
             ))}

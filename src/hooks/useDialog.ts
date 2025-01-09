@@ -18,12 +18,6 @@ export function useDialog<T extends TableData>() {
     setIsDeleteDialogOpen(false);
   };
 
-  const openDelete = (item: T) => {
-    setSelectedItem(item);
-    setIsDeleteDialogOpen(true);
-    setIsOpen(false);
-  };
-
   const close = () => {
     setIsOpen(false);
     setIsDeleteDialogOpen(false);
@@ -36,7 +30,6 @@ export function useDialog<T extends TableData>() {
     selectedItem,
     openAdd,
     openEdit,
-    openDelete,
     close,
     setIsDeleteDialogOpen,
   };

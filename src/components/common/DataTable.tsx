@@ -40,19 +40,30 @@ export function DataTable<T extends TableData>({
   const [searchTerm, setSearchTerm] = useState("");
 
   const totalPages = Math.ceil(total_data / perPage);
+  const startIndex = (currentPage - 1) * perPage + 1;
+  const endIndex = Math.min(currentPage * perPage, total_data);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     onSearch?.(value);
   };
 
-  if (isLoading) {
-    return <div className="p-6 text-center">Loading...</div>;
-  }
+  const renderEmptyState = () => (
+    <tr>
+      <td
+        colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
+        className="px-6 py-8 text-center text-gray-500"
+      >
+        No data available
+      </td>
+    </tr>
+  );
 
-  if (!data?.length && !isLoading) {
+  if (isLoading) {
     return (
-      <div className="p-6 text-center text-gray-500">No data available</div>
+      <div className="flex justify-center items-center p-8">
+        <div className="text-gray-500">Loading...</div>
+      </div>
     );
   }
 
@@ -77,7 +88,7 @@ export function DataTable<T extends TableData>({
               <SelectValue placeholder="Select size" />
             </SelectTrigger>
             <SelectContent>
-              {[10, 25, 50, 100].map((size) => (
+              {[5, 15, 25, 50].map((size) => (
                 <SelectItem key={size} value={String(size)}>
                   {size}
                 </SelectItem>
@@ -89,64 +100,67 @@ export function DataTable<T extends TableData>({
 
       <div className="rounded-md border">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead>
+          <thead className="bg-gray-50">
             <tr>
               {columns.map((column) => (
                 <th
                   key={column.accessor}
-                  className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
                   {column.header}
                 </th>
               ))}
-              {(onEdit || onDelete) && (
-                <th className="px-6 py-3 bg-gray-50">Actions</th>
-              )}
+              {(onEdit || onDelete) && <th className="px-6 py-3">Actions</th>}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {data.map((item) => (
-              <tr key={item.id}>
-                {columns.map((column) => (
-                  <td
-                    key={`${item.id}-${column.accessor}`}
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                  >
-                    {item[column.accessor]}
-                  </td>
+            {data.length === 0
+              ? renderEmptyState()
+              : data.map((item) => (
+                  <tr key={item.id}>
+                    {columns.map((column) => (
+                      <td
+                        key={`${item.id}-${column.accessor}`}
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                      >
+                        {String(item[column.accessor] ?? "")}
+                      </td>
+                    ))}
+                    {(onEdit || onDelete) && (
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2">
+                          {onEdit && (
+                            <Button
+                              onClick={() => onEdit(item)}
+                              variant="outline"
+                              size="sm"
+                            >
+                              Edit
+                            </Button>
+                          )}
+                          {onDelete && (
+                            <Button
+                            onClick={() => onDelete(item)}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
                 ))}
-                {(onEdit || onDelete) && (
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    {onEdit && (
-                      <Button
-                        onClick={() => onEdit(item)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Edit
-                      </Button>
-                    )}
-                    {onDelete && (
-                      <Button
-                        onClick={() => onDelete(item)}
-                        variant="destructive"
-                        size="sm"
-                      >
-                        Delete
-                      </Button>
-                    )}
-                  </td>
-                )}
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>
 
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-500">
-          Showing {(currentPage - 1) * perPage + 1} to{" "}
-          {Math.min(currentPage * perPage, total_data)} of {total_data} results
+          {total_data > 0
+            ? `Showing ${startIndex} to ${endIndex} of ${total_data} results`
+            : "No results"}
         </div>
         <div className="flex space-x-2">
           <Button
@@ -161,7 +175,7 @@ export function DataTable<T extends TableData>({
             variant="outline"
             size="sm"
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || total_data === 0}
           >
             Next
           </Button>
