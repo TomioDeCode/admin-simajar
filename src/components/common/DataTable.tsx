@@ -1,14 +1,25 @@
 import { ColumnConfig, TableData } from "@/types/tableReus";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { useState } from "react";
+import { Pencil, Trash2, Search } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import { useState } from "react";
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface DataTableProps<T> {
   columns: ColumnConfig[];
@@ -49,138 +60,143 @@ export function DataTable<T extends TableData>({
   };
 
   const renderEmptyState = () => (
-    <tr>
-      <td
+    <TableRow>
+      <TableCell
         colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
-        className="px-6 py-8 text-center text-gray-500"
+        className="h-32 text-center"
       >
-        No data available
-      </td>
-    </tr>
+        <div className="flex flex-col items-center justify-center text-sm">
+          <p className="text-muted-foreground">No data available</p>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <div className="text-gray-500">Loading...</div>
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center p-8">
+          <div className="text-muted-foreground">Loading...</div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Input
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="max-w-sm"
-          />
+    <Card className="border-0 shadow-transparent">
+      <CardHeader className="-p-10 my-5">
+        <div className="flex items-center justify-between">
+          <div className="relative w-72">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">
+              Rows per page:
+            </span>
+            <Select
+              value={String(perPage)}
+              onValueChange={(value) => onPerPageChange(Number(value))}
+            >
+              <SelectTrigger className="w-20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[5, 15, 25, 50].map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">Rows per page:</span>
-          <Select
-            value={String(perPage)}
-            onValueChange={(value) => onPerPageChange(Number(value))}
-          >
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="Select size" />
-            </SelectTrigger>
-            <SelectContent>
-              {[5, 15, 25, 50].map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="rounded-md border">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
+      </CardHeader>
+      <CardContent className="-p-10">
+        <Table>
+          <TableHeader>
+            <TableRow>
               {columns.map((column) => (
-                <th
-                  key={column.accessor}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  {column.header}
-                </th>
+                <TableHead key={column.accessor}>{column.header}</TableHead>
               ))}
-              {(onEdit || onDelete) && <th className="px-6 py-3">Actions</th>}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+              {(onEdit || onDelete) && (
+                <TableHead className="text-right">Actions</TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {data.length === 0
               ? renderEmptyState()
               : data.map((item) => (
-                  <tr key={item.id}>
+                  <TableRow key={item.id}>
                     {columns.map((column) => (
-                      <td
-                        key={`${item.id}-${column.accessor}`}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                      >
+                      <TableCell key={`${item.id}-${column.accessor}`}>
                         {String(item[column.accessor] ?? "")}
-                      </td>
+                      </TableCell>
                     ))}
                     {(onEdit || onDelete) && (
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
                           {onEdit && (
                             <Button
                               onClick={() => onEdit(item)}
-                              variant="outline"
-                              size="sm"
+                              variant="ghost"
+                              size="icon"
                             >
-                              Edit
+                              <Pencil className="h-4 w-4" />
                             </Button>
                           )}
                           {onDelete && (
                             <Button
-                            onClick={() => onDelete(item)}
-                              variant="destructive"
-                              size="sm"
+                              onClick={() => onDelete(item)}
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
                             >
-                              Delete
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
-                      </td>
+                      </TableCell>
                     )}
-                  </tr>
+                  </TableRow>
                 ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
 
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-500">
-          {total_data > 0
-            ? `Showing ${startIndex} to ${endIndex} of ${total_data} results`
-            : "No results"}
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-muted-foreground">
+            {total_data > 0
+              ? `Showing ${startIndex} to ${endIndex} of ${total_data} results`
+              : "No results"}
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || total_data === 0}
+            >
+              Next
+            </Button>
+          </div>
         </div>
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages || total_data === 0}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
+
+export default DataTable;

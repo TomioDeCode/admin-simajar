@@ -11,70 +11,42 @@ import { useStore } from "zustand";
 import DeleteConfirmationDialog from "@/components/common/DialogDelete";
 import { Plus } from "lucide-react";
 
-export interface GenerationType extends TableData {
+export interface MajorsType extends TableData {
   id: string;
-  number: number;
-  start_date: string;
-  end_date: string;
+  name: string;
+  abbreviation: string;
   created_at: string;
   updated_at: string;
-  is_graduated: boolean;
 }
 
 const columns: ColumnConfig[] = [
   {
-    header: "Number",
-    accessor: "number",
-    type: "number",
+    header: "Name",
+    accessor: "name",
+    type: "text",
     validation: { required: true },
   },
   {
-    header: "Start Date",
-    accessor: "start_date",
-    type: "date",
+    header: "Abbreviation",
+    accessor: "abbreviation",
+    type: "text",
     validation: { required: true },
-  },
-  {
-    header: "End Date",
-    accessor: "end_date",
-    type: "date",
-    validation: { required: true },
-  },
-];
-
-const columsUpdate: ColumnConfig[] = [
-  ...columns,
-  {
-    header: "Lulus",
-    accessor: "is_graduated",
-    type: "switch",
   },
 ];
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-const GENERATIONS_ENDPOINT = `${API_URL}/generations`;
+const GENERATIONS_ENDPOINT = `${API_URL}/majors`;
 
-const formatDateForInput = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toISOString().split("T")[0];
-};
-
-const ensureBooleanValue = (value: any): boolean => {
-  if (typeof value === "boolean") return value;
-  if (typeof value === "string") return value.toLowerCase() === "true";
-  return Boolean(value);
-};
-
-export default function Generation() {
-  const dialog = useDialog<GenerationType>();
+export default function Majors() {
+  const dialog = useDialog<MajorsType>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<GenerationType | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<MajorsType | null>(null);
 
-  const tableStore = useMemo(() => createTableStore<GenerationType>(), []);
+  const tableStore = useMemo(() => createTableStore<MajorsType>(), []);
   const {
     filteredData,
     meta,
@@ -99,50 +71,23 @@ export default function Generation() {
   }, [fetchData, currentPage, perPage]);
 
   useEffect(() => {
-    setSearch(searchTerm, ["number"]);
+    setSearch(searchTerm, ["name", "abbreviation"]);
   }, [searchTerm, setSearch]);
 
-  const formatSelectedItemDates = (item: GenerationType) => {
-    return {
-      ...item,
-      start_date: formatDateForInput(item.start_date),
-      end_date: formatDateForInput(item.end_date),
-      is_graduated: ensureBooleanValue(item.is_graduated),
-    };
-  };
-
-  const formattedData = filteredData.map((item) => ({
-    ...item,
-    start_date: formatDateForInput(item.start_date),
-    end_date: formatDateForInput(item.end_date),
-    is_graduated: ensureBooleanValue(item.is_graduated),
-  }));
-
-  const handleSubmit = async (formData: Partial<GenerationType>) => {
+  const handleSubmit = async (formData: Partial<MajorsType>) => {
     setIsSubmitting(true);
     try {
-      const processedFormData = {
-        ...formData,
-
-        is_graduated:
-          formData.is_graduated === undefined
-            ? false
-            : Boolean(formData.is_graduated),
-      };
-
       if (dialog.selectedItem) {
         const updatedItem = {
           ...dialog.selectedItem,
-          ...processedFormData,
-
-          is_graduated: processedFormData.is_graduated,
-        } as GenerationType;
+          ...formData,
+        } as MajorsType;
 
         await updateItem(GENERATIONS_ENDPOINT, updatedItem);
-        toast.success("Angkatan Update Berhasil");
+        toast.success("Jurusan Update Berhasil");
       } else {
-        await addItem(GENERATIONS_ENDPOINT, processedFormData);
-        toast.success("Angkatan Tambah Berhasil");
+        await addItem(GENERATIONS_ENDPOINT, formData);
+        toast.success("Jurusan Tambah Berhasil");
       }
       dialog.close();
     } catch (error) {
@@ -153,7 +98,7 @@ export default function Generation() {
     }
   };
 
-  const openDeleteDialog = (item: GenerationType) => {
+  const openDeleteDialog = (item: MajorsType) => {
     setItemToDelete(item);
     setDeleteDialogOpen(true);
   };
@@ -163,7 +108,7 @@ export default function Generation() {
 
     try {
       await deleteItem(GENERATIONS_ENDPOINT, itemToDelete.id);
-      toast.success("Angakatan Delete Berhasil");
+      toast.success("Jurusan Delete Berhasil");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -176,22 +121,18 @@ export default function Generation() {
     return <div className="p-4 text-red-500">Error: {error}</div>;
   }
 
-  const formattedInitialData = dialog.selectedItem
-    ? formatSelectedItemDates(dialog.selectedItem)
-    : undefined;
-
   return (
     <div className="p-2 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Angkatan</h1>
+        <h1 className="text-2xl font-bold">Jurusan</h1>
         <Button onClick={dialog.openAdd}>
-          <Plus /> Angkatan
+          <Plus /> Jurusan
         </Button>
       </div>
 
-      <DataTable<GenerationType>
-        columns={columsUpdate}
-        data={formattedData}
+      <DataTable<MajorsType>
+        columns={columns}
+        data={filteredData}
         onEdit={dialog.openEdit}
         currentPage={meta?.currentPage || 1}
         perPage={meta?.perPage || 10}
@@ -207,8 +148,8 @@ export default function Generation() {
         open={dialog.isOpen}
         onClose={dialog.close}
         onSubmit={handleSubmit}
-        columns={dialog.selectedItem ? columsUpdate : columns}
-        initialData={formattedInitialData}
+        columns={columns}
+        initialData={dialog.selectedItem}
         isSubmitting={isSubmitting}
       />
 
@@ -216,7 +157,7 @@ export default function Generation() {
         isOpen={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        itemName="Angkatan"
+        itemName="Jurusan"
       />
     </div>
   );

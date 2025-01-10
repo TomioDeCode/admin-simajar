@@ -5,16 +5,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +40,6 @@ export function TableDialog<T extends TableData>({
   isSubmitting,
 }: TableDialogProps<T>) {
   const [formData, setFormData] = useState<Partial<T>>(initialData || {});
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { options, loading, fetchOptions } = useSelectOptions();
 
   useEffect(() => {
@@ -79,13 +68,6 @@ export function TableDialog<T extends TableData>({
     onSubmit(formData);
   };
 
-  const handleDelete = () => {
-    if (onDelete) {
-      onDelete(formData as T);
-      setShowDeleteDialog(false);
-    }
-  };
-
   const renderField = (column: ColumnConfig) => {
     const value = formData[column.accessor as keyof T];
 
@@ -100,7 +82,6 @@ export function TableDialog<T extends TableData>({
               id={column.accessor}
               checked={Boolean(value)}
               onCheckedChange={(checked) => {
-                console.log(`Switching ${column.accessor} to:`, checked); // Debug log
                 setFormData((prev) => ({
                   ...prev,
                   [column.accessor]: checked,
@@ -178,16 +159,6 @@ export function TableDialog<T extends TableData>({
               </div>
             ))}
             <DialogFooter className="flex justify-between gap-2">
-              {initialData && onDelete && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => setShowDeleteDialog(true)}
-                  disabled={isSubmitting}
-                >
-                  Delete
-                </Button>
-              )}
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -205,27 +176,6 @@ export function TableDialog<T extends TableData>({
           </form>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this
-              item.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
