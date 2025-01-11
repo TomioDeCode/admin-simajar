@@ -19,6 +19,9 @@ export interface SubjectsType extends TableData {
   abbreviation: string;
   is_vocational_subject: boolean;
   major_id: string | null;
+  major: {
+    name: string;
+  };
 }
 
 const INITIAL_FORM_DATA: Partial<SubjectsType> = {
@@ -52,7 +55,7 @@ const COLUMNS: ColumnConfigR[] = [
     accessor: "major_id",
     type: "select",
     optionsUrl: "/majors/list",
-    formatter: (value) => value ?? "-",
+    formatter: (value, row) => row?.major?.name || "-",
   },
 ];
 
@@ -79,6 +82,8 @@ export default function Subjects() {
     setSearch,
     pageData,
   } = useStore(tableStore);
+
+  console.log(filteredData);
 
   const handleSubmit = async (formData: Partial<SubjectsType>) => {
     try {
@@ -129,8 +134,6 @@ export default function Subjects() {
     }, 300);
     return () => clearTimeout(timer);
   }, [fetchData, meta?.currentPage, meta?.perPage]);
-
-  console.log(filteredData)
 
   if (error) {
     return (

@@ -42,7 +42,6 @@ export default function Roles() {
   const tableStore = useMemo(() => createTableStore<RoleType>(), []);
   const {
     filteredData,
-    meta,
     isLoading,
     error,
     fetchData,

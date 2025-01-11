@@ -4,7 +4,7 @@ export interface BaseColumnConfig {
 }
 
 export interface ColumnConfigR extends ColumnConfig {
-  formatter?: (value: any) => string | number;
+  formatter?: (value: any, row?: any) => string | number;
 }
 
 import { ColumnConfig, TableData } from "@/types/tableReus";
@@ -47,10 +47,11 @@ interface DataTableProps<T> {
 
 const formatValue = (
   value: any,
-  formatter?: (value: any) => string | number
+  formatter?: (value: any, row?: any) => string | number,
+  row?: any
 ) => {
   if (formatter) {
-    return formatter(value);
+    return formatter(value, row);
   }
 
   if (value === null || value === undefined) {
@@ -177,7 +178,11 @@ export function DataTable<T extends TableData>({
                   <TableRow key={item.id}>
                     {columns.map((column) => (
                       <TableCell key={`${item.id}-${column.accessor}`}>
-                        {formatValue(item[column.accessor], column.formatter)}
+                        {formatValue(
+                          item[column.accessor],
+                          column.formatter,
+                          item
+                        )}
                       </TableCell>
                     ))}
                     {(onEdit || onDelete) && (
