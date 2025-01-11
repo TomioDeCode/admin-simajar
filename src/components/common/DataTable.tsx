@@ -1,6 +1,16 @@
+export interface BaseColumnConfig {
+  accessor: string;
+  header: string;
+}
+
+export interface ColumnConfigR extends ColumnConfig {
+  formatter?: (value: any) => string | number;
+}
+
 import { ColumnConfig, TableData } from "@/types/tableReus";
 import { useState } from "react";
 import { Pencil, Trash2, Search } from "lucide-react";
+import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +32,7 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface DataTableProps<T> {
-  columns: ColumnConfig[];
+  columns: ColumnConfigR[];
   data: T[];
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
@@ -34,6 +44,37 @@ interface DataTableProps<T> {
   onPerPageChange: (perPage: number) => void;
   onSearch?: (search: string) => void;
 }
+
+const formatValue = (
+  value: any,
+  formatter?: (value: any) => string | number
+) => {
+  if (formatter) {
+    return formatter(value);
+  }
+
+  if (value === null || value === undefined) {
+    return "-";
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Ya" : "Tidak";
+  }
+
+  if (
+    value instanceof Date ||
+    (typeof value === "string" && value.includes("T"))
+  ) {
+    try {
+      const date = new Date(value);
+      return format(date, "dd MMM yyyy HH:mm");
+    } catch {
+      return String(value);
+    }
+  }
+
+  return String(value ?? "");
+};
 
 export function DataTable<T extends TableData>({
   columns,
@@ -84,7 +125,7 @@ export function DataTable<T extends TableData>({
 
   return (
     <Card className="border-0 shadow-transparent">
-      <CardHeader className="-p-10 my-5">
+      <CardHeader className="mb-5">
         <div className="flex items-center justify-between">
           <div className="relative w-72">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -117,7 +158,7 @@ export function DataTable<T extends TableData>({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="-p-10">
+      <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
@@ -136,7 +177,7 @@ export function DataTable<T extends TableData>({
                   <TableRow key={item.id}>
                     {columns.map((column) => (
                       <TableCell key={`${item.id}-${column.accessor}`}>
-                        {String(item[column.accessor] ?? "")}
+                        {formatValue(item[column.accessor], column.formatter)}
                       </TableCell>
                     ))}
                     {(onEdit || onDelete) && (

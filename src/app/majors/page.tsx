@@ -1,7 +1,7 @@
 import Majors from "@/components/features/jurusan/Majors";
 import React from "react";
 
-const GenerasiPage = () => {
+const MajorsPage = () => {
   return (
     <main className="min-h-screen py-3 ">
       <div className="mx-auto max-w-7xl">
@@ -15,4 +15,4 @@ const GenerasiPage = () => {
   );
 };
 
-export default GenerasiPage;
+export default MajorsPage;

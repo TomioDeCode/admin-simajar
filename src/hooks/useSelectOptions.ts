@@ -6,13 +6,15 @@ export function useSelectOptions() {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
   const fetchOptions = async (field: string, url: string) => {
+    const fullUrl = process.env.NEXT_PUBLIC_API_URL + url;
+    
     if (options[field]) return;
 
     setLoading((prev) => ({ ...prev, [field]: true }));
     try {
-      const response = await fetch(url);
+      const response = await fetch(fullUrl);
       const data = await response.json();
-      const formattedOptions = data.map((item: any) => ({
+      const formattedOptions = data.data.map((item: any) => ({
         label: item.name || item.title,
         value: item.id,
       }));

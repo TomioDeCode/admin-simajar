@@ -21,7 +21,14 @@ export interface GenerationType extends TableData {
   is_graduated: boolean;
 }
 
-const columns: ColumnConfig[] = [
+const INITIAL_FORM_DATA: Partial<GenerationType> = {
+  number: 0,
+  start_date: "",
+  end_date: "",
+  is_graduated: false,
+};
+
+const BASE_COLUMNS: ColumnConfig[] = [
   {
     header: "Number",
     accessor: "number",
@@ -42,10 +49,10 @@ const columns: ColumnConfig[] = [
   },
 ];
 
-const columsUpdate: ColumnConfig[] = [
-  ...columns,
+const COLUMNS_WITH_GRADUATION: ColumnConfig[] = [
+  ...BASE_COLUMNS,
   {
-    header: "Lulus",
+    header: "Graduated",
     accessor: "is_graduated",
     type: "switch",
   },
@@ -53,8 +60,10 @@ const columsUpdate: ColumnConfig[] = [
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 const GENERATIONS_ENDPOINT = `${API_URL}/generations`;
+const DEFAULT_PER_PAGE = 5;
 
 const formatDateForInput = (dateString: string) => {
+  if (!dateString) return "";
   const date = new Date(dateString);
   return date.toISOString().split("T")[0];
 };
@@ -67,10 +76,6 @@ const ensureBooleanValue = (value: any): boolean => {
 
 export default function Generation() {
   const dialog = useDialog<GenerationType>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(5);
-  const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<GenerationType | null>(null);
 
@@ -88,68 +93,38 @@ export default function Generation() {
     pageData,
   } = useStore(tableStore);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchData(GENERATIONS_ENDPOINT, {
-        page: currentPage,
-        perPage: perPage,
-      });
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [fetchData, currentPage, perPage]);
-
-  useEffect(() => {
-    setSearch(searchTerm, ["number"]);
-  }, [searchTerm, setSearch]);
-
-  const formatSelectedItemDates = (item: GenerationType) => {
-    return {
-      ...item,
-      start_date: formatDateForInput(item.start_date),
-      end_date: formatDateForInput(item.end_date),
-      is_graduated: ensureBooleanValue(item.is_graduated),
-    };
-  };
-
-  const formattedData = filteredData.map((item) => ({
+  const formatGenerationData = (item: GenerationType) => ({
     ...item,
     start_date: formatDateForInput(item.start_date),
     end_date: formatDateForInput(item.end_date),
     is_graduated: ensureBooleanValue(item.is_graduated),
-  }));
+  });
+
+  const formattedData = filteredData.map(formatGenerationData);
 
   const handleSubmit = async (formData: Partial<GenerationType>) => {
-    setIsSubmitting(true);
     try {
       const processedFormData = {
         ...formData,
-
-        is_graduated:
-          formData.is_graduated === undefined
-            ? false
-            : Boolean(formData.is_graduated),
+        is_graduated: formData.is_graduated ?? false,
       };
 
       if (dialog.selectedItem) {
         const updatedItem = {
           ...dialog.selectedItem,
           ...processedFormData,
-
-          is_graduated: processedFormData.is_graduated,
         } as GenerationType;
 
         await updateItem(GENERATIONS_ENDPOINT, updatedItem);
-        toast.success("Angkatan Update Berhasil");
+        toast.success("Generation updated successfully");
       } else {
         await addItem(GENERATIONS_ENDPOINT, processedFormData);
-        toast.success("Angkatan Tambah Berhasil");
+        toast.success("Generation added successfully");
       }
       dialog.close();
     } catch (error) {
-      console.error("Update error:", error);
+      console.error("Operation error:", error);
       toast.error(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -163,7 +138,7 @@ export default function Generation() {
 
     try {
       await deleteItem(GENERATIONS_ENDPOINT, itemToDelete.id);
-      toast.success("Angakatan Delete Berhasil");
+      toast.success("Generation deleted successfully");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -172,51 +147,71 @@ export default function Generation() {
     }
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchData(GENERATIONS_ENDPOINT, {
+        page: meta?.currentPage ?? 1,
+        perPage: meta?.perPage ?? DEFAULT_PER_PAGE,
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [fetchData, meta?.currentPage, meta?.perPage]);
+
   if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>;
+    return (
+      <div className="p-4 text-red-500">Error loading generations: {error}</div>
+    );
   }
 
-  const formattedInitialData = dialog.selectedItem
-    ? formatSelectedItemDates(dialog.selectedItem)
-    : undefined;
+  const initialFormData = dialog.selectedItem
+    ? formatGenerationData(dialog.selectedItem)
+    : INITIAL_FORM_DATA;
 
   return (
-    <div className="p-2 space-y-4">
+    <div className="p-4 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Angkatan</h1>
-        <Button onClick={dialog.openAdd}>
-          <Plus /> Angkatan
+        <h1 className="text-2xl font-bold">Generation</h1>
+        <Button onClick={dialog.openAdd} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          <span>Add Generation</span>
         </Button>
       </div>
 
       <DataTable<GenerationType>
-        columns={columsUpdate}
+        columns={COLUMNS_WITH_GRADUATION}
         data={formattedData}
         onEdit={dialog.openEdit}
-        currentPage={meta?.currentPage || 1}
-        perPage={meta?.perPage || 10}
+        currentPage={meta?.currentPage ?? 1}
+        perPage={meta?.perPage ?? DEFAULT_PER_PAGE}
         total_data={pageData}
         isLoading={isLoading}
         onDelete={openDeleteDialog}
-        onPageChange={setCurrentPage}
-        onPerPageChange={setPerPage}
-        onSearch={setSearchTerm}
+        onPageChange={(page) =>
+          fetchData(GENERATIONS_ENDPOINT, {
+            page,
+            perPage: meta?.perPage ?? DEFAULT_PER_PAGE,
+          })
+        }
+        onPerPageChange={(perPage) =>
+          fetchData(GENERATIONS_ENDPOINT, { page: 1, perPage })
+        }
+        onSearch={(term) => setSearch(term, ["number"])}
       />
 
       <TableDialog
         open={dialog.isOpen}
         onClose={dialog.close}
         onSubmit={handleSubmit}
-        columns={dialog.selectedItem ? columsUpdate : columns}
-        initialData={formattedInitialData}
-        isSubmitting={isSubmitting}
+        columns={dialog.selectedItem ? COLUMNS_WITH_GRADUATION : BASE_COLUMNS}
+        initialData={initialFormData as any}
+        isSubmitting={isLoading}
       />
 
       <DeleteConfirmationDialog
         isOpen={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        itemName="Angkatan"
+        itemName="Generation"
       />
     </div>
   );

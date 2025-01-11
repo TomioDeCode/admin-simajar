@@ -11,45 +11,62 @@ import { useStore } from "zustand";
 import DeleteConfirmationDialog from "@/components/common/DialogDelete";
 import { Plus } from "lucide-react";
 
-export interface MajorsType extends TableData {
+export interface SubjectsType extends TableData {
   id: string;
-  name: string;
-  abbreviation: string;
   created_at: string;
   updated_at: string;
+  name: string;
+  abbreviation: string;
+  is_vocational_subject: boolean;
+  major_id: string | null;
 }
 
-const INITIAL_FORM_DATA: Partial<MajorsType> = {
+const INITIAL_FORM_DATA: Partial<SubjectsType> = {
   name: "",
   abbreviation: "",
+  is_vocational_subject: false,
+  major_id: null,
 };
 
 const COLUMNS: ColumnConfigR[] = [
   {
-    header: "Nama Jurusan",
+    header: "Nama Kelas",
     accessor: "name",
     type: "text",
     validation: { required: true },
   },
   {
-    header: "Singkatan Jurusan",
+    header: "Singkatan Kelas",
     accessor: "abbreviation",
     type: "text",
     validation: { required: true },
   },
+  {
+    header: "Mapel Jurusan",
+    accessor: "is_vocational_subject",
+    type: "switch",
+    formatter: (value) => (value ? "Ya" : "Tidak"),
+  },
+  {
+    header: "Jurusan",
+    accessor: "major_id",
+    type: "select",
+    optionsUrl: "/majors/list",
+    formatter: (value) => value ?? "-",
+  },
 ];
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-const MAJORS_ENDPOINT = `${API_URL}/majors`;
+const SUBJECTS_ENDPOINT = `${API_URL}/subjects`;
 
 const DEFAULT_PER_PAGE = 5;
 
-export default function Majors() {
-  const dialog = useDialog<MajorsType>();
+export default function Subjects() {
+  const dialog = useDialog<SubjectsType>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<MajorsType | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<SubjectsType | null>(null);
 
-  const tableStore = useMemo(() => createTableStore<MajorsType>(), []);
+  const tableStore = useMemo(() => createTableStore<SubjectsType>(), []);
   const {
     filteredData,
     meta,
@@ -63,19 +80,19 @@ export default function Majors() {
     pageData,
   } = useStore(tableStore);
 
-  const handleSubmit = async (formData: Partial<MajorsType>) => {
+  const handleSubmit = async (formData: Partial<SubjectsType>) => {
     try {
       if (dialog.selectedItem) {
         const updatedItem = {
           ...dialog.selectedItem,
           ...formData,
-        } as MajorsType;
+        } as SubjectsType;
 
-        await updateItem(MAJORS_ENDPOINT, updatedItem);
-        toast.success("Major updated successfully");
+        await updateItem(SUBJECTS_ENDPOINT, updatedItem);
+        toast.success("Subject updated successfully");
       } else {
-        await addItem(MAJORS_ENDPOINT, formData);
-        toast.success("Major added successfully");
+        await addItem(SUBJECTS_ENDPOINT, formData);
+        toast.success("Subject added successfully");
       }
       dialog.close();
     } catch (error) {
@@ -84,7 +101,7 @@ export default function Majors() {
     }
   };
 
-  const openDeleteDialog = (item: MajorsType) => {
+  const openDeleteDialog = (item: SubjectsType) => {
     setItemToDelete(item);
     setDeleteDialogOpen(true);
   };
@@ -93,8 +110,8 @@ export default function Majors() {
     if (!itemToDelete) return;
 
     try {
-      await deleteItem(MAJORS_ENDPOINT, itemToDelete.id);
-      toast.success("Major deleted successfully");
+      await deleteItem(SUBJECTS_ENDPOINT, itemToDelete.id);
+      toast.success("Subject deleted successfully");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -105,7 +122,7 @@ export default function Majors() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchData(MAJORS_ENDPOINT, {
+      fetchData(SUBJECTS_ENDPOINT, {
         page: meta?.currentPage ?? 1,
         perPage: meta?.perPage ?? DEFAULT_PER_PAGE,
       });
@@ -115,21 +132,21 @@ export default function Majors() {
 
   if (error) {
     return (
-      <div className="p-4 text-red-500">Error loading majors: {error}</div>
+      <div className="p-4 text-red-500">Error loading subjects: {error}</div>
     );
   }
 
   return (
     <div className="p-4 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Majors</h1>
+        <h1 className="text-2xl font-bold">Subjects</h1>
         <Button onClick={dialog.openAdd} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          <span>Add Major</span>
+          <span>Add Subject</span>
         </Button>
       </div>
 
-      <DataTable<MajorsType>
+      <DataTable<SubjectsType>
         columns={COLUMNS}
         data={filteredData}
         onEdit={dialog.openEdit}
@@ -139,13 +156,13 @@ export default function Majors() {
         isLoading={isLoading}
         onDelete={openDeleteDialog}
         onPageChange={(page) =>
-          fetchData(MAJORS_ENDPOINT, {
+          fetchData(SUBJECTS_ENDPOINT, {
             page,
             perPage: meta?.perPage ?? DEFAULT_PER_PAGE,
           })
         }
         onPerPageChange={(perPage) =>
-          fetchData(MAJORS_ENDPOINT, { page: 1, perPage })
+          fetchData(SUBJECTS_ENDPOINT, { page: 1, perPage })
         }
         onSearch={(term) => setSearch(term, ["name", "abbreviation"])}
       />
@@ -163,7 +180,7 @@ export default function Majors() {
         isOpen={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        itemName="Major"
+        itemName="Subject"
       />
     </div>
   );
