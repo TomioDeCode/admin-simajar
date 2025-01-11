@@ -36,12 +36,12 @@ interface DataTableProps<T> {
   data: T[];
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
-  currentPage: number;
+  currentPage?: number | undefined;
   perPage: number;
   total_data: number;
   isLoading?: boolean;
-  onPageChange: (page: number) => void;
-  onPerPageChange: (perPage: number) => void;
+  onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
   onSearch?: (search: string) => void;
 }
 
@@ -92,8 +92,8 @@ export function DataTable<T extends TableData>({
   const [searchTerm, setSearchTerm] = useState("");
 
   const totalPages = Math.ceil(total_data / perPage);
-  const startIndex = (currentPage - 1) * perPage + 1;
-  const endIndex = Math.min(currentPage * perPage, total_data);
+  const startIndex = (currentPage ?? 1 - 1) * perPage + 1;
+  const endIndex = Math.min((currentPage ?? 1) * perPage, total_data);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -142,7 +142,7 @@ export function DataTable<T extends TableData>({
             </span>
             <Select
               value={String(perPage)}
-              onValueChange={(value) => onPerPageChange(Number(value))}
+              onValueChange={(value) => onPerPageChange?.(Number(value))}
             >
               <SelectTrigger className="w-20">
                 <SelectValue />
@@ -220,15 +220,15 @@ export function DataTable<T extends TableData>({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              onClick={() => onPageChange?.(currentPage ?? 1 - 1)}
+              disabled={currentPage === 1 || total_data === 0}
             >
               Previous
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPageChange(currentPage + 1)}
+              onClick={() => onPageChange?.(currentPage ?? 1 + 1)}
               disabled={currentPage === totalPages || total_data === 0}
             >
               Next

@@ -10,7 +10,7 @@ interface PaginationParams {
 
 interface TableState<T> {
   data: {
-    data: T[];
+    data: T[] | undefined;
     total_data: number;
     current_page: number;
     per_page: number;
@@ -19,7 +19,7 @@ interface TableState<T> {
   pageData: number;
   isLoading: boolean;
   error: string | null;
-  meta: {
+  meta?: {
     currentPage: number;
     perPage: number;
     total_data: number;
@@ -72,15 +72,15 @@ export const createTableStore = <T extends { id: string }>() => {
         const dataPage = result.data.total_data;
 
         const newData = {
-          data: result.data.data || [],
+          data: result.data.total_data ? result.data.data : result.data,
           total_data: result.data.total_data || 0,
           current_page: result.data.current_page || 1,
           per_page: result.data.per_page || 10,
         };
 
         set({
-          data: newData,
-          filteredData: newData.data,
+          data: newData as any,
+          filteredData: newData.data as any,
           pageData: dataPage ?? 0,
           meta: {
             currentPage: params.page,
@@ -106,7 +106,7 @@ export const createTableStore = <T extends { id: string }>() => {
       }
 
       const searchLower = search.toLowerCase();
-      const filtered = data.data.filter((item) => {
+      const filtered = data?.data?.filter((item) => {
         return searchFields.some((field) => {
           const value = item[field];
           if (typeof value === "string") {

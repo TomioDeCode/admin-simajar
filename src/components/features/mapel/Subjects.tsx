@@ -1,15 +1,15 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
 import { ColumnConfigR, DataTable } from "@/components/common/DataTable";
+import DeleteConfirmationDialog from "@/components/common/DialogDelete";
 import { TableDialog } from "@/components/common/TableDialog";
+import React, { useEffect, useMemo, useState } from "react";
 import { createTableStore } from "@/hooks/useTableStore";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { TableData } from "@/types/tableReus";
 import { useDialog } from "@/hooks/useDialog";
-import { useStore } from "zustand";
-import DeleteConfirmationDialog from "@/components/common/DialogDelete";
 import { Plus } from "lucide-react";
+import { useStore } from "zustand";
+import { toast } from "sonner";
 
 export interface SubjectsType extends TableData {
   id: string;
@@ -129,6 +129,8 @@ export default function Subjects() {
     }, 300);
     return () => clearTimeout(timer);
   }, [fetchData, meta?.currentPage, meta?.perPage]);
+
+  console.log(filteredData)
 
   if (error) {
     return (
