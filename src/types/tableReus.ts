@@ -3,22 +3,23 @@ export interface TableData {
   [key: string]: any;
 }
 
-export interface SelectOption {
-  label: string;
-  value: any;
-}
-
 export interface ColumnConfig {
   header: string;
   accessor: string;
-  type?: "text" | "number" | "date" | "select" | "switch";
-  optionsUrl?: string;
+  type?: "text" | "number" | "date" | "select" | "switch" | "time";
+  optionsUrl?: string | SelectOption[];
+  options?: SelectOption[];
   validation?: {
     required?: boolean;
     pattern?: RegExp;
     min?: number;
     max?: number;
   };
+}
+
+export interface SelectOption {
+  label: string;
+  value: string | number;
 }
 
 export interface TableState<T> {

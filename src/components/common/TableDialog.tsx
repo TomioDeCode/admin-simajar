@@ -34,13 +34,12 @@ export function TableDialog<T extends TableData>({
   open,
   onClose,
   onSubmit,
-  onDelete,
   columns,
   initialData,
   isSubmitting,
 }: TableDialogProps<T>) {
   const [formData, setFormData] = useState<Partial<T>>(initialData || {});
-  const { options, loading, fetchOptions } = useSelectOptions();
+  const { options, loading, getOptions } = useSelectOptions();
 
   useEffect(() => {
     if (open) {
@@ -57,7 +56,7 @@ export function TableDialog<T extends TableData>({
 
       columns.forEach((column) => {
         if (column.type === "select" && column.optionsUrl) {
-          fetchOptions(column.accessor, column.optionsUrl);
+          getOptions(column.accessor, column.optionsUrl);
         }
       });
     }
@@ -105,7 +104,7 @@ export function TableDialog<T extends TableData>({
             </SelectTrigger>
             <SelectContent>
               {options[column.accessor]?.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
+                <SelectItem key={opt.value} value={String(opt.value)}>
                   {opt.label}
                 </SelectItem>
               ))}
